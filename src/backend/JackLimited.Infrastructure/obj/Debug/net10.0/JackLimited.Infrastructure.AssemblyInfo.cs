@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JackLimited.Infrastructure")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ee3c790ab7ff7c72fa279dda3c75e6ce4f2da672")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6c069e67540d710e52e26a9426785b4c6768b785")]
 [assembly: System.Reflection.AssemblyProductAttribute("JackLimited.Infrastructure")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JackLimited.Infrastructure")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
