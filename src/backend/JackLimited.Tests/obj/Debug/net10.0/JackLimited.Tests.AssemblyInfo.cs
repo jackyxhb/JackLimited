@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JackLimited.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0656da5951b94ba6951a3b94f00b04f0ad900cbc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e5f2cba17593b2a0407e5091838e57bcb9d95573")]
 [assembly: System.Reflection.AssemblyProductAttribute("JackLimited.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JackLimited.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
