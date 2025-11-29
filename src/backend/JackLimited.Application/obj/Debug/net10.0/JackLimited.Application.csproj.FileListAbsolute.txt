@@ -1,0 +1,13 @@
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/bin/Debug/net10.0/JackLimited.Application.deps.json
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/bin/Debug/net10.0/JackLimited.Application.dll
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/bin/Debug/net10.0/JackLimited.Application.pdb
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/JackLimited.Application.csproj.AssemblyReference.cache
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/JackLimited.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/JackLimited.Application.AssemblyInfoInputs.cache
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/JackLimited.Application.AssemblyInfo.cs
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/JackLimited.Application.csproj.CoreCompileInputs.cache
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/JackLimited.Application.sourcelink.json
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/JackLimited.Application.dll
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/refint/JackLimited.Application.dll
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/JackLimited.Application.pdb
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Application/obj/Debug/net10.0/ref/JackLimited.Application.dll

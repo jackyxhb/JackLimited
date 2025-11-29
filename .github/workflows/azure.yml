@@ -1,0 +1,6 @@
+# GitHub Actions already in .github/workflows/azure.yml → just push to main
+# Local deployment
+docker-compose up --build
+
+# Azure one-click (after first setup)
+az webapp up --name jacklimited-portal --resource-group JackLimitedRG --sku B1

@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "dgSpecHash": "xc4zbTDDjZU=",
+  "success": true,
+  "projectFilePath": "/Users/macbook1/work/JackLimited/src/backend/JackLimited.Api/JackLimited.Api.csproj",
+  "expectedPackageFiles": [
+    "/Users/macbook1/.nuget/packages/fluentvalidation/12.1.0/fluentvalidation.12.1.0.nupkg.sha512",
+    "/Users/macbook1/.nuget/packages/fluentvalidation.aspnetcore/11.3.1/fluentvalidation.aspnetcore.11.3.1.nupkg.sha512",
+    "/Users/macbook1/.nuget/packages/fluentvalidation.dependencyinjectionextensions/11.11.0/fluentvalidation.dependencyinjectionextensions.11.11.0.nupkg.sha512",
+    "/Users/macbook1/.nuget/packages/microsoft.entityframeworkcore/10.0.0/microsoft.entityframeworkcore.10.0.0.nupkg.sha512",
+    "/Users/macbook1/.nuget/packages/microsoft.entityframeworkcore.abstractions/10.0.0/microsoft.entityframeworkcore.abstractions.10.0.0.nupkg.sha512",
+    "/Users/macbook1/.nuget/packages/microsoft.entityframeworkcore.analyzers/10.0.0/microsoft.entityframeworkcore.analyzers.10.0.0.nupkg.sha512",
+    "/Users/macbook1/.nuget/packages/microsoft.entityframeworkcore.inmemory/10.0.0/microsoft.entityframeworkcore.inmemory.10.0.0.nupkg.sha512",
+    "/Users/macbook1/.nuget/packages/microsoft.entityframeworkcore.relational/10.0.0/microsoft.entityframeworkcore.relational.10.0.0.nupkg.sha512",
+    "/Users/macbook1/.nuget/packages/npgsql/10.0.0/npgsql.10.0.0.nupkg.sha512",
+    "/Users/macbook1/.nuget/packages/npgsql.entityframeworkcore.postgresql/10.0.0/npgsql.entityframeworkcore.postgresql.10.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

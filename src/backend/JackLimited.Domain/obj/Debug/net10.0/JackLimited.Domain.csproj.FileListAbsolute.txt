@@ -1,0 +1,12 @@
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/bin/Debug/net10.0/JackLimited.Domain.deps.json
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/bin/Debug/net10.0/JackLimited.Domain.dll
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/bin/Debug/net10.0/JackLimited.Domain.pdb
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/obj/Debug/net10.0/JackLimited.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/obj/Debug/net10.0/JackLimited.Domain.AssemblyInfoInputs.cache
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/obj/Debug/net10.0/JackLimited.Domain.AssemblyInfo.cs
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/obj/Debug/net10.0/JackLimited.Domain.csproj.CoreCompileInputs.cache
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/obj/Debug/net10.0/JackLimited.Domain.sourcelink.json
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/obj/Debug/net10.0/JackLimited.Domain.dll
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/obj/Debug/net10.0/refint/JackLimited.Domain.dll
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/obj/Debug/net10.0/JackLimited.Domain.pdb
+/Users/macbook1/work/JackLimited/src/backend/JackLimited.Domain/obj/Debug/net10.0/ref/JackLimited.Domain.dll
