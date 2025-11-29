@@ -58,7 +58,7 @@ const form = ref<SurveyRequest>({
 
 const submitForm = async () => {
   await submitSurvey(form.value)
-  if (!error.value) {
+  if (!error) {
     // Reset form on success
     form.value = {
       likelihoodToRecommend: 5,

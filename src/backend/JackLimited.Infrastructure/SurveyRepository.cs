@@ -25,4 +25,12 @@ public class SurveyRepository : ISurveyRepository
             .Select(s => s.LikelihoodToRecommend)
             .ToListAsync();
     }
+
+    public async Task<double> GetAverageRatingAsync()
+    {
+        var ratings = await _context.Surveys
+            .Select(s => (double)s.LikelihoodToRecommend)
+            .ToListAsync();
+        return ratings.Any() ? ratings.Average() : 0;
+    }
 }

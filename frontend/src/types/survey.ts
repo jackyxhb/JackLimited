@@ -7,3 +7,11 @@ export interface SurveyRequest {
 export interface NpsResponse {
   nps: number;
 }
+
+export interface AverageResponse {
+  average: number;
+}
+
+export interface DistributionResponse {
+  [key: number]: number;
+}

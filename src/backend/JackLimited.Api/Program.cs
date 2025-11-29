@@ -28,7 +28,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // Vite dev server
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174") // Vite dev server
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -69,6 +69,21 @@ app.MapGet("/api/survey/nps", async (ISurveyRepository repository) =>
     var ratings = await repository.GetAllRatingsAsync();
     var nps = NpsCalculator.CalculateNps(ratings);
     return Results.Ok(new { Nps = nps });
+});
+
+app.MapGet("/api/survey/average", async (ISurveyRepository repository) =>
+{
+    var average = await repository.GetAverageRatingAsync();
+    return Results.Ok(new { Average = Math.Round(average, 2) });
+});
+
+app.MapGet("/api/survey/distribution", async (ISurveyRepository repository) =>
+{
+    var ratings = await repository.GetAllRatingsAsync();
+    var distribution = ratings
+        .GroupBy(r => r)
+        .ToDictionary(g => g.Key, g => g.Count());
+    return Results.Ok(distribution);
 });
 
 app.Run();
