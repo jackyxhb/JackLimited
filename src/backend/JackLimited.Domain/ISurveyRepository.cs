@@ -1,8 +1,10 @@
-using JackLimited.Domain;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace JackLimited.Domain;
 
 public interface ISurveyRepository
 {
     Task<Survey> AddAsync(Survey survey);
+    Task<IEnumerable<int>> GetAllRatingsAsync();
 }

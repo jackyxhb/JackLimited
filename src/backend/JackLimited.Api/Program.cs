@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services
 builder.Services.AddValidatorsFromAssembly(typeof(SurveyRequest).Assembly);
 
-if (builder.Environment.IsEnvironment("Testing"))
+if (builder.Environment.IsEnvironment("Testing") || builder.Environment.IsEnvironment("Development"))
 {
     builder.Services.AddDbContext<JackLimitedDbContext>(options =>
         options.UseInMemoryDatabase("TestDb"));
@@ -23,7 +23,23 @@ else
 
 builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
 
+// Add CORS
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Vite dev server
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+// Use CORS
+app.UseCors();
+
+app.MapGet("/", () => "Hello World!");
 
 // Minimal API endpoint
 app.MapPost("/api/survey", async (SurveyRequest request, IValidator<SurveyRequest> validator, ISurveyRepository repository) =>
@@ -46,6 +62,13 @@ app.MapPost("/api/survey", async (SurveyRequest request, IValidator<SurveyReques
     await repository.AddAsync(survey);
 
     return Results.Created($"/api/survey/{survey.Id}", new { Id = survey.Id });
+});
+
+app.MapGet("/api/survey/nps", async (ISurveyRepository repository) =>
+{
+    var ratings = await repository.GetAllRatingsAsync();
+    var nps = NpsCalculator.CalculateNps(ratings);
+    return Results.Ok(new { Nps = nps });
 });
 
 app.Run();
