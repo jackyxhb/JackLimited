@@ -30,8 +30,9 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
                 {
                     services.Remove(descriptor);
                 }
+                var databaseName = $"TestDb_{Guid.NewGuid()}";
                 services.AddDbContext<JackLimitedDbContext>(options =>
-                    options.UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}"));
+                    options.UseInMemoryDatabase(databaseName));
             });
         });
     }

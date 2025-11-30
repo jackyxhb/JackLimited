@@ -33,14 +33,15 @@ public class SurveyRequestValidator : AbstractValidator<SurveyRequest>
     {
         if (string.IsNullOrEmpty(text)) return true;
 
-        // Check for dangerous HTML/script content
+        // Check for dangerous content
         var dangerousPatterns = new[]
         {
             @"<script[^>]*>.*?</script>", // script tags
             @"<[^>]+>", // any HTML tags
             @"javascript:", // javascript URLs
             @"on\w+\s*=", // event handlers
-            @"&[^;]*;", // HTML entities (some are safe, but we'll be conservative)
+            @"&", // HTML entities and ampersands
+            @"[""']", // quotes and apostrophes
         };
 
         foreach (var pattern in dangerousPatterns)

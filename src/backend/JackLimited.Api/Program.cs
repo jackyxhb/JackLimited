@@ -4,7 +4,6 @@ using JackLimited.Application;
 using JackLimited.Domain;
 using JackLimited.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -110,22 +109,6 @@ app.UseStaticFiles();
 // Use CORS
 app.UseCors();
 
-// Sanitization helper
-string SanitizeText(string? text)
-{
-    if (string.IsNullOrEmpty(text)) return text ?? "";
-
-    // Remove HTML tags and entities
-    var sanitized = Regex.Replace(text, @"<[^>]*>", "");
-    sanitized = Regex.Replace(sanitized, @"&[^;]+;", "");
-
-    // Remove control characters
-    sanitized = Regex.Replace(sanitized, @"[\x00-\x1F\x7F-\x9F]", "");
-
-    // Trim whitespace
-    return sanitized.Trim();
-}
-
 app.MapGet("/", () => "Hello World!");
 
 // Minimal API endpoint with enhanced error handling
@@ -133,25 +116,23 @@ app.MapPost("/api/survey", async (SurveyRequest request, IValidator<SurveyReques
 {
     try
     {
-        // Sanitize input
-        var sanitizedRequest = new SurveyRequest(
-            request.LikelihoodToRecommend,
-            string.IsNullOrEmpty(request.Comments) ? null : SanitizeText(request.Comments),
-            string.IsNullOrEmpty(request.Email) ? null : request.Email?.Trim().ToLowerInvariant()
-        );
-
-        var validationResult = await validator.ValidateAsync(sanitizedRequest);
+        var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
         {
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
+        var sanitizedComments = string.IsNullOrEmpty(request.Comments)
+            ? null
+            : InputSanitizer.SanitizeText(request.Comments);
+        var sanitizedEmail = InputSanitizer.SanitizeEmail(request.Email);
+
         var survey = new Survey
         {
             Id = Guid.NewGuid(),
-            LikelihoodToRecommend = sanitizedRequest.LikelihoodToRecommend,
-            Comments = sanitizedRequest.Comments,
-            Email = sanitizedRequest.Email,
+            LikelihoodToRecommend = request.LikelihoodToRecommend,
+            Comments = sanitizedComments,
+            Email = sanitizedEmail,
             CreatedAt = DateTime.UtcNow
         };
 

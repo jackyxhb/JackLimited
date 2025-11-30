@@ -17,12 +17,6 @@ public class SurveyRepository : ISurveyRepository
         if (survey == null)
             throw new ArgumentNullException(nameof(survey));
 
-        // Sanitize and validate at domain level
-        survey.Sanitize();
-
-        if (!survey.IsValid())
-            throw new InvalidOperationException("Survey data is invalid");
-
         _context.Surveys.Add(survey);
         await _context.SaveChangesAsync();
         return survey;
