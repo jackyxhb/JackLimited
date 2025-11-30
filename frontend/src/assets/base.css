@@ -33,6 +33,11 @@
   --color-heading: var(--vt-c-text-light-1);
   --color-text: var(--vt-c-text-light-1);
 
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-hover: rgba(37, 99, 235, 0.1);
+  --color-card-background: var(--vt-c-white);
+
   --section-gap: 160px;
 }
 
@@ -47,6 +52,11 @@
 
     --color-heading: var(--vt-c-text-dark-1);
     --color-text: var(--vt-c-text-dark-2);
+
+    --color-primary: #3b82f6;
+    --color-primary-hover: #2563eb;
+    --color-hover: rgba(59, 130, 246, 0.1);
+    --color-card-background: var(--vt-c-black-soft);
   }
 }
 
@@ -61,6 +71,11 @@
 
   --color-heading: var(--vt-c-text-dark-1);
   --color-text: var(--vt-c-text-dark-2);
+
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-hover: rgba(59, 130, 246, 0.1);
+  --color-card-background: var(--vt-c-black-soft);
 }
 
 *,

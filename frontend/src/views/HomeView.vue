@@ -1,263 +1,269 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
-import SurveyForm from '../components/SurveyForm.vue'
-import NpsChart from '../components/NpsChart.vue'
-import RatingDistribution from '../components/RatingDistribution.vue'
-import ThemeToggle from '../components/ThemeToggle.vue'
-import ChartSkeleton from '../components/ChartSkeleton.vue'
-import { useSurveyStore } from '@/stores/survey'
-
-const surveyStore = useSurveyStore()
-let refreshInterval: number | null = null
-
-// Load initial data with error handling
-const loadData = async () => {
-  try {
-    await Promise.allSettled([
-      surveyStore.fetchNps(),
-      surveyStore.fetchAverage(),
-      surveyStore.fetchDistribution()
-    ])
-  } catch (error) {
-    console.error('Failed to load initial data:', error)
-  }
-}
-
-// Auto-refresh data every 30 seconds
-const startAutoRefresh = () => {
-  refreshInterval = setInterval(async () => {
-    if (!surveyStore.isAnyLoading) {
-      await loadData()
-    }
-  }, 30000) // 30 seconds
-}
-
-const stopAutoRefresh = () => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval)
-    refreshInterval = null
-  }
-}
-
-onMounted(async () => {
-  await loadData()
-  startAutoRefresh()
-})
-
-onUnmounted(() => {
-  stopAutoRefresh()
-})
+// No script needed for the home page
 </script>
 
 <template>
-  <main>
-    <div class="container">
-      <header class="app-header">
-        <h1>Jack Limited Feedback Portal</h1>
-        <p class="subtitle">Help us improve by sharing your experience</p>
-        <div class="header-actions">
-          <ThemeToggle />
-        </div>
-      </header>
-
-      <SurveyForm />
-
-      <section class="analytics-section">
-        <h2>Analytics Dashboard</h2>
-
-        <!-- Global loading indicator -->
-        <div v-if="surveyStore.isAnyLoading" class="global-loading">
-          <div class="loading-spinner"></div>
-          <span>Updating data...</span>
-        </div>
-
-        <!-- Global error indicator -->
-        <div v-if="surveyStore.hasErrors" class="global-error">
-          <div class="error-icon">⚠</div>
-          <div class="error-content">
-            <h3>Data Loading Issues</h3>
-            <p>Some data may not be current. Please check your connection.</p>
-            <button @click="loadData" :disabled="surveyStore.isAnyLoading" class="refresh-button">
-              Refresh Data
-            </button>
+  <main class="home-page">
+    <div class="hero-section">
+      <div class="container">
+        <div class="hero-content">
+          <h1 class="hero-title">Welcome to Jack Limited</h1>
+          <p class="hero-subtitle">
+            Your feedback helps us build better products and services.
+            Share your experience and explore our analytics dashboard.
+          </p>
+          <div class="hero-actions">
+            <router-link to="/survey" class="btn btn-primary">
+              <span class="icon">📝</span>
+              Give Feedback
+            </router-link>
+            <router-link to="/analytics" class="btn btn-secondary">
+              <span class="icon">📊</span>
+              View Analytics
+            </router-link>
           </div>
         </div>
+      </div>
+    </div>
 
-        <div class="charts">
-          <div class="chart-wrapper">
-            <NpsChart
-              v-if="!surveyStore.isNpsLoading && !surveyStore.isDistributionLoading && !surveyStore.npsError && !surveyStore.distributionError"
-              :nps="surveyStore.nps"
-              :distribution="surveyStore.distribution"
-              :is-loading="false"
-              :error="null"
-              :on-retry="() => Promise.all([surveyStore.fetchNps(), surveyStore.fetchDistribution()])"
-            />
-            <ChartSkeleton v-else />
+    <div class="features-section">
+      <div class="container">
+        <h2 class="section-title">What We Offer</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <h3>Easy Feedback</h3>
+            <p>Share your thoughts quickly and securely with our user-friendly survey form.</p>
+            <router-link to="/survey" class="feature-link">Start Survey →</router-link>
           </div>
-          <div class="chart-wrapper">
-            <RatingDistribution
-              v-if="!surveyStore.isAverageLoading && !surveyStore.isDistributionLoading && !surveyStore.averageError && !surveyStore.distributionError"
-              :is-loading="false"
-              :error="null"
-              :on-retry="() => Promise.all([surveyStore.fetchAverage(), surveyStore.fetchDistribution()])"
-            />
-            <ChartSkeleton v-else />
+
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Real-time Analytics</h3>
+            <p>Explore live data visualizations and insights from customer feedback.</p>
+            <router-link to="/analytics" class="feature-link">View Dashboard →</router-link>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon">🌙</div>
+            <h3>Dark Mode</h3>
+            <p>Switch between light and dark themes for comfortable viewing anytime.</p>
           </div>
         </div>
-      </section>
+      </div>
     </div>
   </main>
 </template>
 
 <style scoped>
+.home-page {
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+.hero-section {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  color: white;
+  padding: 4rem 0;
+  text-align: center;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0 1rem;
 }
 
-.app-header {
-  text-align: center;
-  margin-bottom: 3rem;
-  padding: 2rem 0;
-  border-bottom: 1px solid var(--color-border);
-  position: relative;
+.hero-content {
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.app-header h1 {
-  color: var(--color-heading);
-  margin-bottom: 0.5rem;
-  font-size: 2.5rem;
+.hero-title {
+  font-size: 3rem;
   font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.2;
 }
 
-.subtitle {
-  color: var(--color-text);
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-.header-actions {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-}
-
-.analytics-section {
-  margin-top: 4rem;
-}
-
-.analytics-section h2 {
-  text-align: center;
-  color: #333;
+.hero-subtitle {
+  font-size: 1.25rem;
   margin-bottom: 2rem;
-  font-size: 1.8rem;
-  font-weight: 600;
+  opacity: 0.9;
+  line-height: 1.5;
 }
 
-.charts {
+.hero-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-.chart-wrapper {
-  flex: 1;
-  min-width: 300px;
-}
-
-.global-loading, .global-error {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 1rem;
-  padding: 1rem 1.5rem;
-  margin-bottom: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
   border-radius: 8px;
-  font-size: 0.95rem;
-}
-
-.global-loading {
-  background: #e7f3ff;
-  border: 1px solid #b3d9ff;
-  color: #0066cc;
-}
-
-.global-error {
-  background: #fff3cd;
-  border: 1px solid #ffeaa7;
-  color: #856404;
-}
-
-.loading-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid currentColor;
-  border-top: 2px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.error-content {
-  flex: 1;
-}
-
-.error-content h3 {
-  margin: 0 0 0.25rem 0;
-  font-size: 1rem;
+  text-decoration: none;
   font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
-.error-content p {
-  margin: 0 0 0.5rem 0;
+.btn-primary {
+  background: white;
+  color: var(--color-primary);
+  border-color: white;
+}
+
+.btn-primary:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: white;
+  border-color: white;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.icon {
+  font-size: 1.1em;
+}
+
+.features-section {
+  padding: 4rem 0;
+  background: var(--color-card-background);
+}
+
+.section-title {
+  text-align: center;
+  color: var(--color-heading);
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 3rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+  color: var(--color-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.feature-card p {
+  color: var(--color-text);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.feature-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
   font-size: 0.9rem;
+  transition: color 0.3s ease;
 }
 
-.refresh-button {
-  background: #ffc107;
-  color: #212529;
-  border: none;
-  padding: 0.375rem 0.75rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
-}
-
-.refresh-button:hover:not(:disabled) {
-  background: #e0a800;
-}
-
-.refresh-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.feature-link:hover {
+  color: var(--color-primary-hover);
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .container {
-    padding: 15px;
+  .hero-section {
+    padding: 3rem 0;
   }
 
-  .app-header h1 {
-    font-size: 2rem;
+  .hero-title {
+    font-size: 2.25rem;
   }
 
-  .charts {
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .hero-actions {
     flex-direction: column;
+    align-items: center;
+  }
+
+  .btn {
+    width: 100%;
+    max-width: 300px;
+    justify-content: center;
+  }
+
+  .features-section {
+    padding: 3rem 0;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
     gap: 1.5rem;
   }
 
-  .charts > * {
-    min-width: unset;
+  .feature-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .feature-card {
+    padding: 1.25rem;
+  }
+
+  .feature-icon {
+    font-size: 2.5rem;
   }
 }
 </style>
