@@ -5,6 +5,9 @@ using JackLimited.Domain;
 using JackLimited.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("JackLimited.Tests")]
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,13 +32,17 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:5174") // Vite dev server
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "https://jacklimited-portal.azurewebsites.net") // Vite dev server + production
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
 });
 
 var app = builder.Build();
+
+// Configure static files serving
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 // Use CORS
 app.UseCors();
@@ -167,3 +174,5 @@ app.MapGet("/api/survey/distribution", async (ISurveyRepository repository) =>
 });
 
 app.Run();
+
+public partial class Program { }

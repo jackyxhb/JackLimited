@@ -70,12 +70,16 @@ jobs:
         cd src/backend/JackLimited.Api
         dotnet publish --configuration Release --output ./publish
 
+    - name: Copy frontend to backend wwwroot
+      run: |
+        mkdir -p src/backend/JackLimited.Api/publish/wwwroot
+        cp -r frontend/dist/* src/backend/JackLimited.Api/publish/wwwroot/
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-artifacts
         path: |
-          frontend/dist/
           src/backend/JackLimited.Api/publish/
 
   deploy:
