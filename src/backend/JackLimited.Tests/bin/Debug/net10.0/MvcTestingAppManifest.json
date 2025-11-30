@@ -1,6 +1,0 @@
-{
-  "JackLimited.Api, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/macbook1\/work\/JackLimited\/src\/backend\/JackLimited.Api",
-  "JackLimited.Application, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/macbook1\/work\/JackLimited\/src\/backend\/JackLimited.Application",
-  "JackLimited.Domain, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/macbook1\/work\/JackLimited\/src\/backend\/JackLimited.Domain",
-  "JackLimited.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null": "\/Users\/macbook1\/work\/JackLimited\/src\/backend\/JackLimited.Infrastructure"
-}
