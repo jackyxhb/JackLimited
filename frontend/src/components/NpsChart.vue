@@ -1,8 +1,30 @@
 <template>
   <div class="nps-chart">
     <h3>Net Promoter Score</h3>
-    <Doughnut :data="chartData" :options="chartOptions" />
-    <p class="nps-value">NPS: {{ nps }}</p>
+
+    <!-- Loading State -->
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Loading NPS data...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="error-container">
+      <div class="error-icon">⚠</div>
+      <p class="error-message">{{ error }}</p>
+      <button @click="onRetry" class="retry-button">
+        Try Again
+      </button>
+    </div>
+
+    <!-- Chart Content -->
+    <div v-else class="chart-container">
+      <Doughnut :data="chartData" :options="chartOptions" />
+      <p class="nps-value">NPS: {{ nps }}</p>
+      <p class="response-count">
+        Total Responses: {{ totalResponses }}
+      </p>
+    </div>
   </div>
 </template>
 
@@ -21,9 +43,20 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 interface Props {
   nps: number
   distribution: Record<number, number>
+  isLoading?: boolean
+  error?: string | null
+  onRetry?: () => void
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  isLoading: false,
+  error: null,
+  onRetry: () => {}
+})
+
+const totalResponses = computed(() => {
+  return Object.values(props.distribution).reduce((sum, count) => sum + count, 0)
+})
 
 const chartData = computed(() => {
   // Calculate NPS categories from distribution
@@ -52,7 +85,8 @@ const chartData = computed(() => {
         '#ffc107', // Yellow for passives
         '#dc3545'  // Red for detractors
       ],
-      borderWidth: 1
+      borderWidth: 1,
+      borderColor: '#fff'
     }]
   }
 })
@@ -63,6 +97,10 @@ const chartOptions = {
   plugins: {
     legend: {
       position: 'bottom' as const,
+      labels: {
+        padding: 20,
+        usePointStyle: true
+      }
     },
     tooltip: {
       callbacks: {
@@ -83,12 +121,99 @@ const chartOptions = {
 .nps-chart {
   max-width: 400px;
   margin: 2rem auto;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
 }
 
 .nps-value {
   text-align: center;
   font-size: 1.5rem;
   font-weight: bold;
-  margin-top: 1rem;
+  margin: 1rem 0 0.5rem 0;
+  color: #333;
+}
+
+.response-count {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  text-align: center;
+  padding: 2rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-container {
+  color: #721c24;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+}
+
+.error-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  margin: 0 0 1rem 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.retry-button {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.retry-button:hover {
+  background: #c82333;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+  .nps-chart {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .chart-container {
+    height: 250px;
+  }
 }
 </style>
