@@ -189,16 +189,16 @@ const exportChart = () => {
 
 <style scoped>
 .rating-distribution {
-  margin: 2rem 0;
-  padding: 1.5rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .chart-container {
   position: relative;
   height: 300px;
+  overflow: hidden;
 }
 
 .chart-header {
@@ -313,8 +313,8 @@ const exportChart = () => {
 /* Responsive design */
 @media (max-width: 600px) {
   .rating-distribution {
-    margin: 1rem 0;
-    padding: 1rem;
+    margin: 0;
+    padding: 0;
   }
 
   .chart-container {

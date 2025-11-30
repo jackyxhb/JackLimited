@@ -263,6 +263,30 @@ All colors automatically adapt for dark mode using CSS media queries and class-b
 }
 ```
 
+### Chart Components
+
+#### Shadow Guidelines
+- **No Individual Shadows**: Chart components (NpsChart, RatingDistribution) should not have their own shadow boxes when used inside `.card` containers
+- **Card Wrapper**: Use the global `.card` class to provide consistent shadow and background styling
+- **Overflow Control**: Chart containers must have `overflow: hidden` to prevent chart content from exceeding card boundaries
+- **Width Constraints**: Chart components should use `width: 100%` when inside cards
+
+```css
+/* ✅ Correct - Chart component inside card */
+.chart-component {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.chart-container {
+  position: relative;
+  height: 300px;
+  overflow: hidden;
+}
+```
+
 ### Navigation
 
 #### Navigation Bar
@@ -460,6 +484,8 @@ frontend/src/
 - [ ] Text remains readable at all sizes
 - [ ] Icons display properly
 - [ ] Hover states work as expected
+- [ ] No double shadows on chart components (cards should provide single shadow)
+- [ ] Chart content stays within card boundaries (no overflow)
 
 ### Functional Testing
 - [ ] Navigation works on all screen sizes
@@ -476,6 +502,6 @@ frontend/src/
 ---
 
 **Last Updated**: November 30, 2025
-**Version**: 1.0
+**Version**: 1.2
 **Maintained by**: Development Team</content>
 <parameter name="filePath">/Users/macbook1/work/JackLimited/frontend/FRONTEND_STYLE_GUIDE.md

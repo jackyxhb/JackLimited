@@ -135,17 +135,16 @@ const exportChart = () => {
 
 <style scoped>
 .nps-chart {
-  max-width: 400px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .chart-container {
   position: relative;
   height: 300px;
+  overflow: hidden;
 }
 
 .chart-header {
@@ -249,8 +248,8 @@ const exportChart = () => {
 /* Responsive design */
 @media (max-width: 600px) {
   .nps-chart {
-    margin: 1rem;
-    padding: 1rem;
+    margin: 0;
+    padding: 0;
   }
 
   .chart-container {
