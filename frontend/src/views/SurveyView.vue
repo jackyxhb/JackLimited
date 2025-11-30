@@ -7,7 +7,7 @@ import SurveyForm from '../components/SurveyForm.vue'
   <div>
     <NavigationBar />
     <main class="page-content">
-    <div class="container-sm">
+    <div class="container">
       <header class="page-header">
         <h1>Share Your Feedback</h1>
         <p class="subtitle">Help us improve by sharing your experience with Jack Limited</p>

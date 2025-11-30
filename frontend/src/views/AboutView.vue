@@ -6,7 +6,7 @@ import NavigationBar from '@/components/NavigationBar.vue'
   <div>
     <NavigationBar />
   <main class="page-content">
-    <div class="container-sm">
+    <div class="container">
       <header class="page-header">
         <h1>About Jack Limited</h1>
         <p class="subtitle">Learn more about our company and mission</p>
