@@ -39,34 +39,71 @@ test('displays NPS and rating analytics', async ({ page }) => {
 });
 
 test('NPS chart shows correct promoter/passive/detractor distribution', async ({ page }) => {
-  // First, submit surveys with different ratings
+  // First, check initial analytics state
+  await page.goto('/analytics');
+  await page.waitForTimeout(2000);
+
+  // Get initial NPS value and response count (if any)
+  const initialNpsText = await page.locator('.nps-value').textContent();
+  const initialResponseText = await page.locator('.response-count').textContent();
+
+  // Extract initial values
+  const initialNpsMatch = initialNpsText?.match(/NPS: (-?\d+(?:\.\d+)?)/);
+  const initialNps = initialNpsMatch ? parseFloat(initialNpsMatch[1]) : 0;
+
+  const initialResponseMatch = initialResponseText?.match(/Total Responses: (\d+)/);
+  const initialResponses = initialResponseMatch ? parseInt(initialResponseMatch[1]) : 0;
+
+  // Now submit surveys with different ratings
   await page.goto('/survey');
 
   const testCases = [
-    { rating: '10', expected: 'promoter' }, // Promoter (9-10)
-    { rating: '9', expected: 'promoter' },  // Promoter (9-10)
-    { rating: '8', expected: 'passive' },   // Passive (7-8)
-    { rating: '7', expected: 'passive' },   // Passive (7-8)
-    { rating: '6', expected: 'detractor' }, // Detractor (0-6)
-    { rating: '5', expected: 'detractor' }, // Detractor (0-6)
+    { rating: '10', category: 'promoter' }, // Promoter (9-10)
+    { rating: '9', category: 'promoter' },  // Promoter (9-10)
+    { rating: '8', category: 'passive' },   // Passive (7-8)
+    { rating: '7', category: 'passive' },   // Passive (7-8)
+    { rating: '6', category: 'detractor' }, // Detractor (0-6)
+    { rating: '5', category: 'detractor' }, // Detractor (0-6)
   ];
+
+  // Count expected categories from test data
+  let expectedPromoters = 0;
+  let expectedPassives = 0;
+  let expectedDetractors = 0;
 
   for (const testCase of testCases) {
     await page.fill('input[type="number"]', testCase.rating);
     await page.click('button[type="submit"]');
     await page.waitForTimeout(500); // Wait for submission
+
+    // Count expected categories
+    if (testCase.category === 'promoter') expectedPromoters++;
+    else if (testCase.category === 'passive') expectedPassives++;
+    else if (testCase.category === 'detractor') expectedDetractors++;
   }
 
-  // Now navigate to analytics to check the results
+  // Navigate back to analytics to check the results
   await page.goto('/analytics');
-
-  // Wait for analytics to update
   await page.waitForTimeout(2000);
 
   // Check that NPS chart is visible and contains data
   await expect(page.locator('.nps-chart canvas')).toBeVisible();
 
-  // The NPS value should be displayed and be a valid number
-  const npsText = await page.locator('.nps-value').textContent();
-  expect(npsText).toMatch(/^NPS: -?\d+(\.\d+)?$/); // Matches "NPS: " followed by a number (possibly negative with decimals)
+  // Verify the NPS value is displayed and is a valid number
+  const finalNpsText = await page.locator('.nps-value').textContent();
+  expect(finalNpsText).toMatch(/^NPS: -?\d+(?:\.\d+)?$/);
+
+  // Verify response count has increased by the number of submissions
+  const finalResponseText = await page.locator('.response-count').textContent();
+  const finalResponseMatch = finalResponseText?.match(/Total Responses: (\d+)/);
+  const finalResponses = finalResponseMatch ? parseInt(finalResponseMatch[1]) : 0;
+  expect(finalResponses).toBe(initialResponses + testCases.length);
+
+  // Verify that the NPS value has been updated (should be different from initial or valid)
+  const finalNpsMatch = finalNpsText?.match(/NPS: (-?\d+(?:\.\d+)?)/);
+  const finalNps = finalNpsMatch ? parseFloat(finalNpsMatch[1]) : null;
+  expect(finalNps).not.toBeNull();
+  expect(typeof finalNps).toBe('number');
+  expect(finalNps).toBeGreaterThanOrEqual(-100);
+  expect(finalNps).toBeLessThanOrEqual(100);
 });
