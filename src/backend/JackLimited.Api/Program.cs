@@ -6,13 +6,29 @@ using JackLimited.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
+using AspNetCoreRateLimit;
+using Microsoft.AspNetCore.HttpOverrides;
 
 [assembly: InternalsVisibleTo("JackLimited.Tests")]
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add user secrets in development
+if (builder.Environment.IsEnvironment("Development"))
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
 // Add services
 builder.Services.AddValidatorsFromAssembly(typeof(SurveyRequest).Assembly);
+
+// Configure rate limiting
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
 if (builder.Environment.IsEnvironment("Testing") || builder.Environment.IsEnvironment("Development"))
 {
@@ -39,6 +55,53 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Configure forwarded headers (important for proxies like Azure App Service)
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+});
+
+// Configure the HTTP request pipeline
+if (!app.Environment.IsDevelopment())
+{
+    // Enable HSTS in production
+    app.UseHsts();
+}
+
+// Use rate limiting
+app.UseIpRateLimiting();
+
+// Add security headers
+app.Use(async (context, next) =>
+{
+    // Content Security Policy
+    context.Response.Headers["Content-Security-Policy"] = 
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "img-src 'self' data: https:; " +
+        "font-src 'self'; " +
+        "connect-src 'self'; " +
+        "frame-ancestors 'none';";
+
+    // Prevent clickjacking
+    context.Response.Headers["X-Frame-Options"] = "DENY";
+
+    // Prevent MIME type sniffing
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+
+    // Enable XSS protection
+    context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+
+    // Referrer policy
+    context.Response.Headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+
+    // Permissions policy
+    context.Response.Headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()";
+
+    await next();
+});
 
 // Configure static files serving
 app.UseDefaultFiles();
