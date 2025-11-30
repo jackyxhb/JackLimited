@@ -16,7 +16,7 @@
           @click="closeMobileMenu"
           :class="{ 'is-active': $route.name === 'home' }"
         >
-          <span class="icon">🏠</span>
+          <HomeIcon class="icon" />
           <span>Home</span>
         </router-link>
 
@@ -26,7 +26,7 @@
           @click="closeMobileMenu"
           :class="{ 'is-active': $route.name === 'survey' }"
         >
-          <span class="icon">📝</span>
+          <MessageSquareIcon class="icon" />
           <span>Feedback</span>
         </router-link>
 
@@ -36,7 +36,7 @@
           @click="closeMobileMenu"
           :class="{ 'is-active': $route.name === 'analytics' }"
         >
-          <span class="icon">📊</span>
+          <BarChart3Icon class="icon" />
           <span>Analytics</span>
         </router-link>
 
@@ -46,7 +46,7 @@
           @click="closeMobileMenu"
           :class="{ 'is-active': $route.name === 'about' }"
         >
-          <span class="icon">ℹ️</span>
+          <InfoIcon class="icon" />
           <span>About</span>
         </router-link>
       </div>
@@ -75,6 +75,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import ThemeToggle from '@/components/ThemeToggle.vue'
+import { HomeIcon, MessageSquareIcon, BarChart3Icon, InfoIcon } from 'lucide-vue-next'
 
 const isMobileMenuOpen = ref(false)
 

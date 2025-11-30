@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ViewContainer from '@/components/ViewContainer.vue'
+import { MessageSquareIcon, BarChart3Icon, SunIcon, ArrowRightIcon } from 'lucide-vue-next'
 </script>
 
 <template>
@@ -13,11 +14,11 @@ import ViewContainer from '@/components/ViewContainer.vue'
         </p>
         <div class="hero-actions">
           <router-link to="/survey" class="btn btn-primary">
-            <span class="icon">📝</span>
+            <MessageSquareIcon class="icon" />
             Give Feedback
           </router-link>
           <router-link to="/analytics" class="btn btn-secondary">
-            <span class="icon">📊</span>
+            <BarChart3Icon class="icon" />
             View Analytics
           </router-link>
         </div>
@@ -28,21 +29,21 @@ import ViewContainer from '@/components/ViewContainer.vue'
           <h2 class="section-title">What We Offer</h2>
           <div class="features-grid">
             <div class="feature-card">
-              <div class="feature-icon icon-xl">📝</div>
+              <MessageSquareIcon class="feature-icon" />
               <h3>Easy Feedback</h3>
               <p>Share your thoughts quickly and securely with our user-friendly survey form.</p>
-              <router-link to="/survey" class="feature-link">Start Survey →</router-link>
+              <router-link to="/survey" class="feature-link">Start Survey <ArrowRightIcon class="icon" /></router-link>
             </div>
 
             <div class="feature-card">
-              <div class="feature-icon icon-xl">📊</div>
+              <BarChart3Icon class="feature-icon" />
               <h3>Real-time Analytics</h3>
               <p>Explore live data visualizations and insights from customer feedback.</p>
-              <router-link to="/analytics" class="feature-link">View Dashboard →</router-link>
+              <router-link to="/analytics" class="feature-link">View Dashboard <ArrowRightIcon class="icon" /></router-link>
             </div>
 
             <div class="feature-card">
-              <div class="feature-icon icon-xl">🌙</div>
+              <SunIcon class="feature-icon" />
               <h3>Dark Mode</h3>
               <p>Switch between light and dark themes for comfortable viewing anytime.</p>
             </div>

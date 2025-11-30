@@ -5,6 +5,7 @@ import NpsChart from '../components/NpsChart.vue'
 import RatingDistribution from '../components/RatingDistribution.vue'
 import ChartSkeleton from '../components/ChartSkeleton.vue'
 import { useSurveyStore } from '@/stores/survey'
+import { AlertCircleIcon } from 'lucide-vue-next'
 
 const surveyStore = useSurveyStore()
 let refreshInterval: number | null = null
@@ -72,7 +73,7 @@ onUnmounted(() => {
 
       <!-- Global error indicator -->
       <div v-if="surveyStore.hasErrors" class="error-container">
-        <div class="error-icon">⚠</div>
+        <AlertCircleIcon class="error-icon" />
         <div class="error-content">
           <h3>Data Loading Issues</h3>
           <p>Some data may not be current. Please check your connection.</p>
