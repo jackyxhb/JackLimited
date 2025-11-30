@@ -1,7 +1,5 @@
 /// <reference types="vite/client" />
 
-import type { DefineComponent } from 'vue'
-
 declare module 'vue' {
   export interface GlobalComponents {
     HomeIcon: typeof import('lucide-vue-next')['Home']

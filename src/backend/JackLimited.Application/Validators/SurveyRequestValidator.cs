@@ -33,20 +33,48 @@ public class SurveyRequestValidator : AbstractValidator<SurveyRequest>
     {
         if (string.IsNullOrEmpty(text)) return true;
 
-        // Remove potential XSS vectors and control characters
-        var sanitized = Regex.Replace(text, @"[<>\""'&]", "");
-        sanitized = Regex.Replace(sanitized, @"[\x00-\x1F\x7F-\x9F]", "");
+        // Check for dangerous HTML/script content
+        var dangerousPatterns = new[]
+        {
+            @"<script[^>]*>.*?</script>", // script tags
+            @"<[^>]+>", // any HTML tags
+            @"javascript:", // javascript URLs
+            @"on\w+\s*=", // event handlers
+            @"&[^;]*;", // HTML entities (some are safe, but we'll be conservative)
+        };
 
-        // Check if the text changed significantly (indicating malicious content)
-        return sanitized.Length >= text.Length * 0.8;
+        foreach (var pattern in dangerousPatterns)
+        {
+            if (Regex.IsMatch(text, pattern, RegexOptions.IgnoreCase))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private bool BeValidEmailFormat(string? email)
     {
         if (string.IsNullOrEmpty(email)) return true;
 
-        // Basic email regex - more restrictive than built-in EmailAddress validator
+        // More restrictive email regex - no consecutive dots, proper format
         var emailRegex = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-        return Regex.IsMatch(email, emailRegex);
+        if (!Regex.IsMatch(email, emailRegex)) return false;
+
+        // Additional checks
+        var localPart = email.Split('@')[0];
+        var domainPart = email.Split('@')[1];
+
+        // No consecutive dots in local part
+        if (localPart.Contains("..")) return false;
+
+        // No consecutive dots in domain part
+        if (domainPart.Contains("..")) return false;
+
+        // Domain should have at least one dot
+        if (!domainPart.Contains(".")) return false;
+
+        return true;
     }
 }
