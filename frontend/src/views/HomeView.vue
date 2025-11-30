@@ -22,7 +22,7 @@ onMounted(async () => {
       <h1>Jack Limited Feedback Portal</h1>
       <SurveyForm />
       <div class="charts">
-        <NpsChart :nps="surveyStore.nps" />
+        <NpsChart :nps="surveyStore.nps" :distribution="surveyStore.distribution" />
         <RatingDistribution />
       </div>
     </div>

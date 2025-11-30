@@ -37,3 +37,34 @@ test('displays NPS and rating analytics', async ({ page }) => {
   await expect(page.locator('text=Average Rating')).toBeVisible();
   await expect(page.locator('.rating-distribution canvas')).toBeVisible();
 });
+
+test('NPS chart shows correct promoter/passive/detractor distribution', async ({ page }) => {
+  await page.goto('/');
+
+  // Submit surveys with different ratings to test NPS categorization
+  const testCases = [
+    { rating: '10', expected: 'promoter' }, // Promoter (9-10)
+    { rating: '9', expected: 'promoter' },  // Promoter (9-10)
+    { rating: '8', expected: 'passive' },   // Passive (7-8)
+    { rating: '7', expected: 'passive' },   // Passive (7-8)
+    { rating: '6', expected: 'detractor' }, // Detractor (0-6)
+    { rating: '5', expected: 'detractor' }, // Detractor (0-6)
+  ];
+
+  for (const testCase of testCases) {
+    await page.fill('input[type="number"]', testCase.rating);
+    await page.click('button[type="submit"]');
+    await page.waitForTimeout(500); // Wait for submission
+  }
+
+  // Wait for analytics to update
+  await page.waitForTimeout(2000);
+
+  // Check that NPS chart is visible and contains data
+  await expect(page.locator('.nps-chart canvas')).toBeVisible();
+
+  // The NPS value should be calculated correctly
+  // With 2 promoters, 2 passives, 2 detractors: NPS = (2-2)/6 * 100 = 0
+  const npsText = await page.locator('.nps-value').textContent();
+  expect(npsText).toContain('NPS: 0');
+});
