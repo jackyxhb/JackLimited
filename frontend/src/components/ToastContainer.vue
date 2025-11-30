@@ -41,7 +41,6 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useToastStore, type Toast } from '@/stores/toast'
 
 const toastStore = useToastStore()

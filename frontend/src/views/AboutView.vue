@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import NavigationBar from '@/components/NavigationBar.vue'
+import ViewContainer from '@/components/ViewContainer.vue'
 </script>
 
 <template>
-  <div>
-    <NavigationBar />
-  <main class="page-content">
-    <div class="container">
+  <ViewContainer>
+    <div class="content-wrapper">
       <header class="page-header">
         <h1>About Jack Limited</h1>
         <p class="subtitle">Learn more about our company and mission</p>
@@ -17,10 +15,16 @@ import NavigationBar from '@/components/NavigationBar.vue'
         <p>Welcome to Jack Limited. We are committed to providing excellent products and services to our customers.</p>
       </div>
     </div>
-  </main>
-  </div>
+  </ViewContainer>
 </template>
 
 <style scoped>
-/* About page specific styles */
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 1000px;
+  margin: 0 auto;
+}
 </style>

@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import NavigationBar from '@/components/NavigationBar.vue'
+import ViewContainer from '@/components/ViewContainer.vue'
 import SurveyForm from '../components/SurveyForm.vue'
 </script>
 
 <template>
-  <div>
-    <NavigationBar />
-    <main class="page-content">
-    <div class="container">
+  <ViewContainer>
+    <div class="content-wrapper">
       <header class="page-header">
         <h1>Share Your Feedback</h1>
         <p class="subtitle">Help us improve by sharing your experience with Jack Limited</p>
@@ -17,10 +15,16 @@ import SurveyForm from '../components/SurveyForm.vue'
         <SurveyForm />
       </div>
     </div>
-  </main>
-</div>
+  </ViewContainer>
 </template>
 
 <style scoped>
-/* Survey page specific styles */
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 1000px;
+  margin: 0 auto;
+}
 </style>

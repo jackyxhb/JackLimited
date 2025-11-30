@@ -104,8 +104,8 @@ const createChart = () => {
         tooltip: {
           callbacks: {
             label: (context) => {
-              const value = context.parsed.y
-              const total = context.dataset.data.reduce((sum, val) => sum + (val as number), 0)
+              const value = context.parsed.y as number
+              const total = (context.dataset.data as number[]).reduce((sum, val) => sum + val, 0)
               const percentage = total > 0 ? Math.round((value / total) * 100) : 0
               return `${value} responses (${percentage}%)`
             }

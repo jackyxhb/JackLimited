@@ -45,7 +45,7 @@ export const useSurveyStore = defineStore('survey', () => {
     operation: keyof LoadingState,
     maxRetriesCount: number = maxRetries
   ): Promise<T> => {
-    let lastError: Error
+    let lastError: Error = new Error('Unknown error')
 
     for (let attempt = 1; attempt <= maxRetriesCount; attempt++) {
       try {

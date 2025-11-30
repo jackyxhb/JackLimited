@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, watch } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { useSurveyStore } from '@/stores/survey'
 import { useToastStore } from '@/stores/toast'
 import type { SurveyRequest } from '@/types/survey'
@@ -245,10 +245,6 @@ const handleSubmit = async () => {
   } finally {
     isSubmitting.value = false
   }
-}
-
-const retrySubmit = async () => {
-  await handleSubmit()
 }
 
 const resetForm = () => {
