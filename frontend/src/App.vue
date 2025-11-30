@@ -1,13 +1,11 @@
 <template>
   <div id="app">
-    <NavigationBar />
     <router-view />
     <ToastContainer />
   </div>
 </template>
 
 <script setup lang="ts">
-import NavigationBar from '@/components/NavigationBar.vue'
 import ToastContainer from '@/components/ToastContainer.vue'
 </script>
 

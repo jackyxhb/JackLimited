@@ -87,7 +87,7 @@ const closeMobileMenu = () => {
 }
 </script>
 
-<style scoped>
+<style>
 .navbar {
   background: var(--color-background);
   border-bottom: 1px solid var(--color-border);
