@@ -19,7 +19,12 @@
 
     <!-- Chart Content -->
     <div v-else class="chart-container">
-      <Doughnut :data="chartData" :options="chartOptions" />
+      <div class="chart-header">
+        <Doughnut ref="chartRef" :data="chartData" :options="chartOptions" />
+        <button @click="exportChart" class="export-button" title="Download chart as image">
+          📥 Download
+        </button>
+      </div>
       <p class="nps-value">NPS: {{ nps }}</p>
       <p class="response-count">
         Total Responses: {{ totalResponses }}
@@ -29,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Doughnut } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -53,6 +58,8 @@ const props = withDefaults(defineProps<Props>(), {
   error: null,
   onRetry: () => {}
 })
+
+const chartRef = ref()
 
 const totalResponses = computed(() => {
   return Object.values(props.distribution).reduce((sum, count) => sum + count, 0)
@@ -115,6 +122,15 @@ const chartOptions = {
     }
   },
 }
+
+const exportChart = () => {
+  if (chartRef.value && chartRef.value.chart) {
+    const link = document.createElement('a')
+    link.download = `nps-chart-${new Date().toISOString().split('T')[0]}.png`
+    link.href = chartRef.value.chart.toBase64Image()
+    link.click()
+  }
+}
 </script>
 
 <style scoped>
@@ -130,6 +146,31 @@ const chartOptions = {
 .chart-container {
   position: relative;
   height: 300px;
+}
+
+.chart-header {
+  position: relative;
+  height: 100%;
+}
+
+.export-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.export-button:hover {
+  background: var(--color-background-soft);
+  border-color: var(--color-border-hover);
 }
 
 .nps-value {

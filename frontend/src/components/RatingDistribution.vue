@@ -19,10 +19,15 @@
 
     <!-- Chart Content -->
     <div v-else class="chart-container">
-      <div class="average-display">
-        <span class="average-label">Average Rating:</span>
-        <span class="average-value">{{ average.toFixed(1) }}</span>
-        <span class="total-responses">({{ totalResponses }} responses)</span>
+      <div class="chart-header">
+        <div class="average-display">
+          <span class="average-label">Average Rating:</span>
+          <span class="average-value">{{ average.toFixed(1) }}</span>
+          <span class="total-responses">({{ totalResponses }} responses)</span>
+        </div>
+        <button @click="exportChart" class="export-button" title="Download chart as image">
+          📥 Download
+        </button>
       </div>
       <canvas ref="chartCanvas"></canvas>
     </div>
@@ -171,6 +176,15 @@ watch([distribution, () => props.isLoading, () => props.error], () => {
 onUnmounted(() => {
   destroyChart()
 })
+
+const exportChart = () => {
+  if (chart && chartCanvas.value) {
+    const link = document.createElement('a')
+    link.download = `rating-distribution-${new Date().toISOString().split('T')[0]}.png`
+    link.href = chart.toBase64Image()
+    link.click()
+  }
+}
 </script>
 
 <style scoped>
@@ -187,6 +201,10 @@ onUnmounted(() => {
   height: 300px;
 }
 
+.chart-header {
+  position: relative;
+}
+
 .average-display {
   text-align: center;
   margin-bottom: 1.5rem;
@@ -194,6 +212,26 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   border-radius: 8px;
   border: 1px solid #dee2e6;
+}
+
+.export-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--color-text);
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.export-button:hover {
+  background: var(--color-background-soft);
+  border-color: var(--color-border-hover);
 }
 
 .average-label {

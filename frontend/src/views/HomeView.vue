@@ -3,6 +3,8 @@ import { onMounted, onUnmounted } from 'vue'
 import SurveyForm from '../components/SurveyForm.vue'
 import NpsChart from '../components/NpsChart.vue'
 import RatingDistribution from '../components/RatingDistribution.vue'
+import ThemeToggle from '../components/ThemeToggle.vue'
+import ChartSkeleton from '../components/ChartSkeleton.vue'
 import { useSurveyStore } from '@/stores/survey'
 
 const surveyStore = useSurveyStore()
@@ -53,6 +55,9 @@ onUnmounted(() => {
       <header class="app-header">
         <h1>Jack Limited Feedback Portal</h1>
         <p class="subtitle">Help us improve by sharing your experience</p>
+        <div class="header-actions">
+          <ThemeToggle />
+        </div>
       </header>
 
       <SurveyForm />
@@ -79,18 +84,26 @@ onUnmounted(() => {
         </div>
 
         <div class="charts">
-          <NpsChart
-            :nps="surveyStore.nps"
-            :distribution="surveyStore.distribution"
-            :is-loading="surveyStore.isNpsLoading || surveyStore.isDistributionLoading"
-            :error="surveyStore.npsError || surveyStore.distributionError"
-            :on-retry="() => Promise.all([surveyStore.fetchNps(), surveyStore.fetchDistribution()])"
-          />
-          <RatingDistribution
-            :is-loading="surveyStore.isAverageLoading || surveyStore.isDistributionLoading"
-            :error="surveyStore.averageError || surveyStore.distributionError"
-            :on-retry="() => Promise.all([surveyStore.fetchAverage(), surveyStore.fetchDistribution()])"
-          />
+          <div class="chart-wrapper">
+            <NpsChart
+              v-if="!surveyStore.isNpsLoading && !surveyStore.isDistributionLoading && !surveyStore.npsError && !surveyStore.distributionError"
+              :nps="surveyStore.nps"
+              :distribution="surveyStore.distribution"
+              :is-loading="false"
+              :error="null"
+              :on-retry="() => Promise.all([surveyStore.fetchNps(), surveyStore.fetchDistribution()])"
+            />
+            <ChartSkeleton v-else />
+          </div>
+          <div class="chart-wrapper">
+            <RatingDistribution
+              v-if="!surveyStore.isAverageLoading && !surveyStore.isDistributionLoading && !surveyStore.averageError && !surveyStore.distributionError"
+              :is-loading="false"
+              :error="null"
+              :on-retry="() => Promise.all([surveyStore.fetchAverage(), surveyStore.fetchDistribution()])"
+            />
+            <ChartSkeleton v-else />
+          </div>
         </div>
       </section>
     </div>
@@ -108,20 +121,27 @@ onUnmounted(() => {
   text-align: center;
   margin-bottom: 3rem;
   padding: 2rem 0;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border);
+  position: relative;
 }
 
 .app-header h1 {
-  color: #333;
+  color: var(--color-heading);
   margin-bottom: 0.5rem;
   font-size: 2.5rem;
   font-weight: 700;
 }
 
 .subtitle {
-  color: #6c757d;
+  color: var(--color-text);
   font-size: 1.1rem;
   margin: 0;
+}
+
+.header-actions {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
 }
 
 .analytics-section {
@@ -143,7 +163,7 @@ onUnmounted(() => {
   margin-top: 2rem;
 }
 
-.charts > * {
+.chart-wrapper {
   flex: 1;
   min-width: 300px;
 }

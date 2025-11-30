@@ -78,32 +78,6 @@
           Reset Form
         </button>
       </div>
-
-      <!-- Success Message -->
-      <div v-if="submitSuccess" class="success-message">
-        <div class="success-icon">✓</div>
-        <div class="success-content">
-          <h3>Thank you for your feedback!</h3>
-          <p>Your response has been submitted successfully.</p>
-        </div>
-      </div>
-
-      <!-- Error Message -->
-      <div v-if="submitError" class="error-message">
-        <div class="error-icon">⚠</div>
-        <div class="error-content">
-          <h3>{{ submitError.title }}</h3>
-          <p>{{ submitError.message }}</p>
-          <button
-            v-if="submitError.canRetry"
-            @click="retrySubmit"
-            :disabled="isSubmitting"
-            class="retry-button"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
     </form>
   </div>
 </template>
@@ -111,6 +85,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, watch } from 'vue'
 import { useSurveyStore } from '@/stores/survey'
+import { useToastStore } from '@/stores/toast'
 import type { SurveyRequest } from '@/types/survey'
 
 interface ValidationErrors {
@@ -119,13 +94,8 @@ interface ValidationErrors {
   email?: string
 }
 
-interface SubmitError {
-  title: string
-  message: string
-  canRetry: boolean
-}
-
 const surveyStore = useSurveyStore()
+const toastStore = useToastStore()
 const { submitSurvey } = surveyStore
 
 const form = reactive<SurveyRequest>({
@@ -136,8 +106,6 @@ const form = reactive<SurveyRequest>({
 
 const validationErrors = reactive<ValidationErrors>({})
 const isSubmitting = ref(false)
-const submitSuccess = ref(false)
-const submitError = ref<SubmitError | null>(null)
 const retryCount = ref(0)
 const maxRetries = 3
 
@@ -221,57 +189,46 @@ const submitWithRetry = async (attempt: number = 1): Promise<void> => {
 
     await submitSurvey(sanitizedForm)
 
-    // Success - reset form
+    // Success - reset form and show toast
     resetForm()
-    submitSuccess.value = true
-    submitError.value = null
-    retryCount.value = 0
-
-    // Auto-hide success message after 5 seconds
-    setTimeout(() => {
-      submitSuccess.value = false
-    }, 5000)
+    toastStore.success(
+      'Feedback Submitted!',
+      'Thank you for your valuable feedback.',
+      3000
+    )
 
   } catch (error) {
     console.error(`Submission attempt ${attempt} failed:`, error)
 
     // Determine error type and create user-friendly message
-    let errorInfo: SubmitError
+    let errorTitle: string
+    let errorMessage: string
 
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      errorInfo = {
-        title: 'Connection Error',
-        message: 'Unable to connect to the server. Please check your internet connection.',
-        canRetry: true
-      }
+      errorTitle = 'Connection Error'
+      errorMessage = 'Unable to connect to the server. Please check your internet connection.'
     } else if (error instanceof Error && error.message.includes('400')) {
-      errorInfo = {
-        title: 'Invalid Data',
-        message: 'Please check your input and try again.',
-        canRetry: false
-      }
+      errorTitle = 'Invalid Data'
+      errorMessage = 'Please check your input and try again.'
     } else if (error instanceof Error && error.message.includes('500')) {
-      errorInfo = {
-        title: 'Server Error',
-        message: 'Our servers are experiencing issues. Please try again later.',
-        canRetry: true
-      }
+      errorTitle = 'Server Error'
+      errorMessage = 'Our servers are experiencing issues. Please try again later.'
     } else {
-      errorInfo = {
-        title: 'Submission Failed',
-        message: 'An unexpected error occurred. Please try again.',
-        canRetry: true
-      }
+      errorTitle = 'Submission Failed'
+      errorMessage = 'An unexpected error occurred. Please try again.'
     }
 
-    submitError.value = errorInfo
+    toastStore.error(errorTitle, errorMessage, 5000)
 
     // Auto-retry for certain errors
-    if (errorInfo.canRetry && attempt < maxRetries) {
-      retryCount.value = attempt
-      setTimeout(() => {
-        submitWithRetry(attempt + 1)
-      }, Math.pow(2, attempt) * 1000) // Exponential backoff
+    if ((error instanceof TypeError && error.message.includes('fetch')) ||
+        (error instanceof Error && error.message.includes('500'))) {
+      if (attempt < maxRetries) {
+        retryCount.value = attempt
+        setTimeout(() => {
+          submitWithRetry(attempt + 1)
+        }, Math.pow(2, attempt) * 1000) // Exponential backoff
+      }
     }
   }
 }
@@ -282,8 +239,6 @@ const handleSubmit = async () => {
   }
 
   isSubmitting.value = true
-  submitSuccess.value = false
-  submitError.value = null
 
   try {
     await submitWithRetry()
@@ -303,18 +258,8 @@ const resetForm = () => {
   Object.keys(validationErrors).forEach(key => {
     delete validationErrors[key as keyof ValidationErrors]
   })
-  submitSuccess.value = false
-  submitError.value = null
   retryCount.value = 0
 }
-
-// Watch for form changes to clear success/error states
-watch(() => [form.likelihoodToRecommend, form.comments, form.email], () => {
-  if (submitSuccess.value || submitError.value) {
-    submitSuccess.value = false
-    submitError.value = null
-  }
-})
 </script>
 
 <style scoped>
@@ -444,68 +389,6 @@ input.error, textarea.error {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
-}
-
-.success-message, .error-message {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  border-radius: 8px;
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  animation: slideIn 0.3s ease-out;
-}
-
-.success-message {
-  background: #d4edda;
-  border: 1px solid #c3e6cb;
-  color: #155724;
-}
-
-.error-message {
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
-  color: #721c24;
-}
-
-.success-icon, .error-icon {
-  font-size: 1.5rem;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.success-content h3, .error-content h3 {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.success-content p, .error-content p {
-  margin: 0;
-  font-size: 0.95rem;
-}
-
-.retry-button {
-  margin-top: 1rem;
-  background: #dc3545;
-  color: white;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-}
-
-.retry-button:hover:not(:disabled) {
-  background: #c82333;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* Responsive design */
