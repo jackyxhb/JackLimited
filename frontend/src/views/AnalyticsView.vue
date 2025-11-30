@@ -114,7 +114,15 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  max-width: 1000px;
+  width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+}
+
+@media (max-width: 768px) {
+  .content-wrapper {
+    padding: 0 var(--spacing-md);
+  }
 }
 </style>

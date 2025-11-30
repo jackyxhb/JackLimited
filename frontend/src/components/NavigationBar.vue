@@ -99,31 +99,62 @@ const closeMobileMenu = () => {
 }
 
 .navbar-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 var(--spacing-lg);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 4rem;
+  height: 4.5rem;
+  min-height: 4.5rem;
 }
 
 .navbar-brand {
-  font-weight: 700;
-  font-size: 1.25rem;
+  flex-shrink: 0;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
 }
 
 .brand-link {
-  color: var(--color-heading);
+  color: var(--color-text);
   text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+
+.brand-link:hover {
+  color: var(--color-primary);
 }
 
 .brand-text {
-  font-weight: 700;
-  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+  letter-spacing: -0.025em;
+}
+
+.navbar-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-shrink: 0;
+}
+
+.navbar-item {
+  color: var(--color-text);
+  text-decoration: none;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius);
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+  position: relative;
+  white-space: nowrap;
 }
 
 .navbar-menu {
@@ -201,7 +232,9 @@ const closeMobileMenu = () => {
 /* Mobile Styles */
 @media (max-width: 768px) {
   .navbar-container {
-    padding: 0 1rem;
+    padding: 0 var(--spacing-md);
+    height: 4rem;
+    min-height: 4rem;
   }
 
   .navbar-menu {
@@ -209,15 +242,16 @@ const closeMobileMenu = () => {
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--color-background);
+    background: var(--color-surface);
     border-bottom: 1px solid var(--color-border);
     flex-direction: column;
-    padding: 1rem 0;
+    padding: var(--spacing-lg) 0;
     transform: translateY(-100%);
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all var(--transition-normal);
+    box-shadow: 0 8px 16px var(--color-shadow);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
   }
 
   .navbar-menu.is-active {
@@ -229,9 +263,10 @@ const closeMobileMenu = () => {
   .navbar-item {
     width: 100%;
     justify-content: center;
-    padding: 1rem;
-    margin: 0.25rem 1rem;
-    border-radius: 8px;
+    padding: var(--spacing-lg);
+    margin: var(--spacing-xs) var(--spacing-lg);
+    border-radius: var(--border-radius);
+    font-size: var(--font-size-base);
   }
 
   .navbar-burger {
@@ -239,22 +274,25 @@ const closeMobileMenu = () => {
   }
 
   .brand-text {
-    font-size: 1.1rem;
+    font-size: var(--font-size-base);
   }
 }
 
 @media (max-width: 480px) {
   .navbar-container {
     height: 3.5rem;
+    min-height: 3.5rem;
+    padding: 0 var(--spacing-sm);
   }
 
   .navbar-item {
-    padding: 0.875rem 1rem;
-    font-size: 0.9rem;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-size-sm);
+    margin: var(--spacing-xs) var(--spacing-md);
   }
 
-  .icon {
-    font-size: 1.1em;
+  .brand-text {
+    font-size: var(--font-size-sm);
   }
 }
 </style>
