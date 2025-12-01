@@ -1,4 +1,5 @@
 using FluentValidation;
+using JackLimited.Domain;
 using System.Text.RegularExpressions;
 
 namespace JackLimited.Application.Validators;
@@ -14,7 +15,7 @@ public class SurveyRequestValidator : AbstractValidator<SurveyRequest>
         RuleFor(x => x.Comments)
             .MaximumLength(1000)
             .WithMessage("Comments must not exceed 1000 characters.")
-            .Must(BeSafeText)
+            .Must(InputSanitizer.IsSafeText)
             .WithMessage("Comments contain invalid characters.")
             .When(x => !string.IsNullOrEmpty(x.Comments));
 
@@ -27,32 +28,6 @@ public class SurveyRequestValidator : AbstractValidator<SurveyRequest>
             .Must(BeValidEmailFormat)
             .WithMessage("Email format is invalid.")
             .When(x => !string.IsNullOrEmpty(x.Email));
-    }
-
-    private bool BeSafeText(string? text)
-    {
-        if (string.IsNullOrEmpty(text)) return true;
-
-        // Check for dangerous content
-        var dangerousPatterns = new[]
-        {
-            @"<script[^>]*>.*?</script>", // script tags
-            @"<[^>]+>", // any HTML tags
-            @"javascript:", // javascript URLs
-            @"on\w+\s*=", // event handlers
-            @"&", // HTML entities and ampersands
-            @"[""']", // quotes and apostrophes
-        };
-
-        foreach (var pattern in dangerousPatterns)
-        {
-            if (Regex.IsMatch(text, pattern, RegexOptions.IgnoreCase))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private bool BeValidEmailFormat(string? email)

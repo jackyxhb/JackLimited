@@ -10,4 +10,8 @@
     <PackageReference Include="FluentValidation" Version="12.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../JackLimited.Domain/JackLimited.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

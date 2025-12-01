@@ -1,6 +1,10 @@
 import process from 'node:process'
 import { defineConfig, devices } from '@playwright/test'
 
+const isCI = !!process.env.CI
+const testingApiKey = process.env.TESTING_API_KEY ?? 'local-testing-key'
+process.env.TESTING_API_KEY = testingApiKey
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -97,14 +101,26 @@ export default defineConfig({
   // outputDir: 'test-results/',
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    /**
-     * Use the dev server by default for faster feedback loop.
-     * Use the preview server on CI for more realistic testing.
-     * Playwright will re-use the local server if there is already a dev-server running.
-     */
-    command: process.env.CI ? 'npm run preview' : 'npm run dev',
-    port: process.env.CI ? 4173 : 5173,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: 'dotnet run --project ../src/backend/JackLimited.Api/JackLimited.Api.csproj --urls http://localhost:5264',
+      port: 5264,
+      reuseExistingServer: !isCI,
+      env: {
+        ASPNETCORE_ENVIRONMENT: 'Testing',
+        ASPNETCORE_URLS: 'http://localhost:5264',
+        Testing__ApiKey: testingApiKey,
+      },
+    },
+    {
+      /**
+       * Use the dev server by default for faster feedback loop.
+       * Use the preview server on CI for more realistic testing.
+       * Playwright will re-use the local server if there is already a dev-server running.
+       */
+      command: isCI ? 'npm run preview' : 'npm run dev',
+      port: isCI ? 4173 : 5173,
+      reuseExistingServer: !isCI,
+    },
+  ],
 })

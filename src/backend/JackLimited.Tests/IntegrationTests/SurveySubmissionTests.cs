@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -16,6 +17,7 @@ public record AverageResponse(double Average);
 public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program>>
 {
     private readonly WebApplicationFactory<Program> _factory;
+    private const string TestingApiKey = "local-testing-key";
 
     public SurveySubmissionTests(WebApplicationFactory<Program> factory)
     {
@@ -37,11 +39,26 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
         });
     }
 
+    private static async Task ResetDatabaseAsync(HttpClient client)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/testing/reset");
+        request.Headers.Add("X-Test-Auth", TestingApiKey);
+        using var response = await client.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+    }
+
+    private async Task<HttpClient> CreateClientWithResetAsync()
+    {
+        var client = _factory.CreateClient();
+        await ResetDatabaseAsync(client);
+        return client;
+    }
+
     [Fact]
     public async Task SubmitSurvey_WithValidData_ReturnsCreatedWithLocation()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
         var request = new
         {
             LikelihoodToRecommend = 9,
@@ -62,7 +79,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task SubmitSurvey_WithMinimumValidData_ReturnsCreated()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
         var request = new
         {
             LikelihoodToRecommend = 5,
@@ -83,7 +100,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task SubmitSurvey_WithInvalidLikelihoodToRecommend_ReturnsBadRequest(int invalidRating)
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
         var request = new
         {
             LikelihoodToRecommend = invalidRating,
@@ -105,7 +122,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task SubmitSurvey_WithCommentsTooLong_ReturnsBadRequest()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
         var longComment = new string('x', 1001);
         var request = new
         {
@@ -125,7 +142,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task SubmitSurvey_WithUnsafeComments_ReturnsBadRequest()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
         var request = new
         {
             LikelihoodToRecommend = 8,
@@ -147,7 +164,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task SubmitSurvey_WithInvalidEmail_ReturnsBadRequest(string invalidEmail)
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
         var request = new
         {
             LikelihoodToRecommend = 8,
@@ -166,7 +183,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task GetNps_WithNoSurveys_ReturnsZero()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
 
         // Act
         var response = await client.GetAsync("/api/survey/nps");
@@ -181,7 +198,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task GetNps_WithSurveys_ReturnsCorrectNps()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
 
         // Submit some test data
         var surveys = new[]
@@ -211,7 +228,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task GetAverage_WithNoSurveys_ReturnsZero()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
 
         // Act
         var response = await client.GetAsync("/api/survey/average");
@@ -226,7 +243,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task GetAverage_WithSurveys_ReturnsCorrectAverage()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
 
         // Submit test data
         var surveys = new[]
@@ -254,7 +271,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task GetDistribution_WithNoSurveys_ReturnsEmptyDictionary()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
 
         // Act
         var response = await client.GetAsync("/api/survey/distribution");
@@ -269,7 +286,7 @@ public class SurveySubmissionTests : IClassFixture<WebApplicationFactory<Program
     public async Task GetDistribution_WithSurveys_ReturnsCorrectDistribution()
     {
         // Arrange
-        var client = _factory.CreateClient();
+        var client = await CreateClientWithResetAsync();
 
         // Submit test data with repeated ratings
         var surveys = new[]

@@ -14,7 +14,8 @@ public class SurveyRequestValidatorTests
         new object?[] { null },
         new object?[] { string.Empty },
         new object?[] { "Valid comment" },
-        new object?[] { new string('x', 1000) }
+        new object?[] { new string('x', 1000) },
+        new object?[] { "Quote friendly \"text\" & partners" }
     };
 
     [Theory]
@@ -88,8 +89,8 @@ public class SurveyRequestValidatorTests
     [Theory]
     [InlineData("<script>alert('xss')</script>")]
     [InlineData("Comment with <b>html</b> tags")]
-    [InlineData("Comment with \"quotes\" and 'apostrophes'")]
-    [InlineData("Comment with & entities")]
+    [InlineData("javascript:alert('xss')")]
+    [InlineData("onload=alert('xss')")]
     public void Validate_Comments_UnsafeContent_ShouldHaveValidationError(string unsafeComment)
     {
         // Arrange

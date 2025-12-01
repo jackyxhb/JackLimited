@@ -1,5 +1,12 @@
 import { test, expect } from '@playwright/test';
 
+const testingApiKey = process.env.TESTING_API_KEY ?? 'local-testing-key';
+const testingHeaders = {
+  'X-Test-Auth': testingApiKey,
+  'Content-Type': 'application/json',
+  Accept: 'application/json',
+};
+
 test('visits the app root url', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('h1')).toHaveText('Welcome to Jack Limited');
@@ -34,10 +41,11 @@ test('displays NPS and rating analytics', async ({ page }) => {
 
 test('NPS chart shows correct promoter/passive/detractor distribution', async ({ page, request }) => {
   // Reset test data and seed a known distribution directly via the API
-  await request.post('/testing/reset');
+  await request.post('/testing/reset', { headers: testingHeaders });
 
   const testCases = [10, 9, 8, 7, 6, 5];
   await request.post('/testing/seed', {
+    headers: testingHeaders,
     data: testCases.map((rating) => ({
       likelihoodToRecommend: rating,
       comments: null,

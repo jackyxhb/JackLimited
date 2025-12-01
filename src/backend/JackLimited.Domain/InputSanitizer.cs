@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace JackLimited.Domain;
@@ -7,6 +8,14 @@ namespace JackLimited.Domain;
 /// </summary>
 public static class InputSanitizer
 {
+    private static readonly Regex[] UnsafeTextPatterns =
+    {
+        new(@"<script[^>]*>.*?</script>", RegexOptions.IgnoreCase | RegexOptions.Singleline),
+        new(@"<[^>]+>", RegexOptions.IgnoreCase | RegexOptions.Singleline),
+        new(@"javascript:", RegexOptions.IgnoreCase),
+        new(@"on\w+\s*=", RegexOptions.IgnoreCase),
+    };
+
     /// <summary>
     /// Sanitizes text input by removing HTML tags, entities, and control characters.
     /// </summary>
@@ -27,6 +36,16 @@ public static class InputSanitizer
 
         // Trim whitespace
         return sanitized.Trim();
+    }
+
+    /// <summary>
+    /// Determines whether the provided text contains potentially unsafe content.
+    /// </summary>
+    public static bool IsSafeText(string? text)
+    {
+        if (string.IsNullOrEmpty(text)) return true;
+
+        return UnsafeTextPatterns.All(pattern => !pattern.IsMatch(text));
     }
 
     /// <summary>

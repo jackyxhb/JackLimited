@@ -1,6 +1,6 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using JackLimited.Application;
 using JackLimited.Domain;
 using JackLimited.Infrastructure;
@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 [assembly: InternalsVisibleTo("JackLimited.Tests")]
 
 var builder = WebApplication.CreateBuilder(args);
+var testingApiKey = builder.Configuration["Testing:ApiKey"] ?? "local-testing-key";
+const string TestAuthHeaderName = "X-Test-Auth";
 
 // Add user secrets in development
 if (builder.Environment.IsEnvironment("Development"))
@@ -218,17 +220,37 @@ app.MapGet("/api/survey/distribution", async (ISurveyRepository repository) =>
     }
 });
 
+bool IsAuthorized(HttpContext context)
+{
+    if (!context.Request.Headers.TryGetValue(TestAuthHeaderName, out var provided))
+    {
+        return false;
+    }
+
+    return string.Equals(provided.ToString(), testingApiKey, StringComparison.Ordinal);
+}
+
 if (app.Environment.IsEnvironment("Testing"))
 {
-    app.MapPost("/testing/reset", async (JackLimitedDbContext dbContext) =>
+    app.MapPost("/testing/reset", async (HttpContext httpContext, JackLimitedDbContext dbContext) =>
     {
+        if (!IsAuthorized(httpContext))
+        {
+            return Results.Unauthorized();
+        }
+
         dbContext.Surveys.RemoveRange(dbContext.Surveys);
         await dbContext.SaveChangesAsync();
         return Results.Ok(new { Message = "Test data cleared" });
     });
 
-    app.MapPost("/testing/seed", async ([FromBody] IEnumerable<SurveyRequest> seeds, IValidator<SurveyRequest> validator, JackLimitedDbContext dbContext) =>
+    app.MapPost("/testing/seed", async (HttpContext httpContext, IEnumerable<SurveyRequest> seeds, IValidator<SurveyRequest> validator, JackLimitedDbContext dbContext) =>
     {
+        if (!IsAuthorized(httpContext))
+        {
+            return Results.Unauthorized();
+        }
+
         if (seeds == null)
         {
             return Results.BadRequest(new { Error = "Seed payload is required" });
