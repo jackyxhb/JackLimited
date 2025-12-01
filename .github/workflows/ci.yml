@@ -133,4 +133,6 @@ jobs:
             exit 0
           fi
           git commit -m "chore: bump version to $NEXT_VERSION [skip ci]"
+          git tag "v$CURRENT_VERSION"
           git push
+          git push --tags
