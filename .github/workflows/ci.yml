@@ -62,9 +62,8 @@ jobs:
       - name: Docker build
         run: docker build -t jacklimited:ci .
 
-      - name: Scan Docker image for vulnerabilities
-        run: |
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasecurity/trivy:latest image jacklimited:ci --format table --exit-code 1 --severity HIGH,CRITICAL
+      - name: Run Trivy scan
+        run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/aquasecurity/trivy:latest image jacklimited:ci --format table --exit-code 1 --severity HIGH,CRITICAL
 
       - name: Log in to Docker Hub
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
