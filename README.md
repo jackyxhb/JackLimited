@@ -31,7 +31,7 @@ A full-stack web application for collecting and analyzing customer feedback thro
 
 ## Prerequisites
 
-- .NET 9.0 or later
+- .NET 8.0 or later
 - Node.js 18+ and npm
 - PostgreSQL (for production)
 
@@ -170,7 +170,7 @@ docker build -t jacklimited .
 docker run -p 8080:8080 jacklimited
 ```
 
-The container listens on `http://localhost:8080` and serves both the API and the compiled SPA.
+The container uses Ubuntu-based .NET 8.0 images and listens on `http://localhost:8080`, serving both the API and the compiled SPA.
 
 ## API Endpoints
 
@@ -193,10 +193,12 @@ The container listens on `http://localhost:8080` and serves both the API and the
 
 Automated validation runs through GitHub Actions (`.github/workflows/ci.yml`) on every push and pull request targeting `main`. The workflow:
 
-- Builds and tests all .NET 9 projects.
+- Builds and tests all .NET 8.0 projects.
 - Installs Node 22, lints, runs Vitest unit tests, and builds the frontend.
-- Builds the Docker image to ensure containerization stays healthy.
+- Builds the Docker image (using Ubuntu-based .NET 8.0 images) to ensure containerization stays healthy.
+- Scans the Docker image for HIGH and CRITICAL vulnerabilities using Trivy; fails the build if any are found.
 - On pushes to `main`, logs into Docker Hub (using `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repo secrets) and pushes `jackyxhb/jacklimited` tagged with the commit SHA and the semantic version from `VERSION`.
+- Creates a Git tag (e.g., `v1.0.5`) on the successful commit.
 - Once the pushes succeed, the workflow bumps `VERSION` (patch by default) and commits the change with `[skip ci]` so the automation does not loop.
 
 ## Architecture Decision Records
