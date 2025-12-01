@@ -11,7 +11,7 @@ RUN npm run build
 RUN npm prune --omit=dev && npm cache clean --force
 
 # Publish the ASP.NET Core backend
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS backend-builder
+FROM mcr.microsoft.com/dotnet/sdk:9.0.1 AS backend-builder
 WORKDIR /src
 COPY JackLimited.sln ./
 COPY src/backend ./src/backend
@@ -19,7 +19,7 @@ RUN dotnet restore JackLimited.sln
 RUN dotnet publish src/backend/JackLimited.Api/JackLimited.Api.csproj -c Release -o /app/publish /p:ASPNETCORE_ENVIRONMENT=Production
 
 # Final runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:9.0.1 AS final
 WORKDIR /app
 RUN apt-get update && \
     apt-get install --only-upgrade zlib1g && \
