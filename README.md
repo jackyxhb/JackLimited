@@ -151,6 +151,16 @@ TESTING_API_KEY=super-secret-test-key npm run test:e2e
 - `TESTING_API_KEY` must match `Testing__ApiKey` supplied to the backend (`local-testing-key` by default).
 - Tests call `/testing/reset` and `/testing/seed` to guarantee deterministic analytics data before performing assertions.
 
+### API Documentation
+
+Swagger/OpenAPI docs are available whenever the backend runs in Development or Testing mode:
+
+```
+http://localhost:5264/swagger
+```
+
+Use the explorer to try requests, inspect schemas, or export the OpenAPI JSON (`/swagger/v1/swagger.json`).
+
 ## API Endpoints
 
 - `POST /api/survey` - Submit a survey response
@@ -159,6 +169,13 @@ TESTING_API_KEY=super-secret-test-key npm run test:e2e
 - `GET /api/survey/distribution` - Get rating distribution
 - `POST /testing/reset` (Testing env only, `X-Test-Auth` required) - Clear all surveys
 - `POST /testing/seed` (Testing env only, `X-Test-Auth` required) - Seed surveys for deterministic tests
+
+## Architecture Decision Records
+
+ADR files documenting key choices live in `docs/adr/`. Start with:
+
+- `0001-monorepo-structure.md` – explains why the frontend remains at the repo root.
+- `0002-deterministic-testing-endpoints.md` – captures the rationale behind the `/testing/*` helpers.
 
 ## Project Structure
 

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 using AspNetCoreRateLimit;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.OpenApi.Models;
 
 [assembly: InternalsVisibleTo("JackLimited.Tests")]
 
@@ -23,6 +24,16 @@ if (builder.Environment.IsEnvironment("Development"))
 
 // Add services
 builder.Services.AddValidatorsFromAssembly(typeof(SurveyRequest).Assembly);
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "JackLimited API",
+        Version = "v1",
+        Description = "Endpoints for submitting surveys and retrieving NPS analytics."
+    });
+});
 
 // Configure rate limiting
 builder.Services.AddMemoryCache();
@@ -69,6 +80,16 @@ if (!app.Environment.IsDevelopment())
 {
     // Enable HSTS in production
     app.UseHsts();
+}
+if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
+{
+    // Surface OpenAPI docs for local/test automation only
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "JackLimited API v1");
+        options.RoutePrefix = "swagger";
+    });
 }
 
 // Use rate limiting
@@ -239,6 +260,7 @@ if (app.Environment.IsEnvironment("Testing"))
             return Results.Unauthorized();
         }
 
+        // Clear existing surveys so each test case starts from a blank slate
         dbContext.Surveys.RemoveRange(dbContext.Surveys);
         await dbContext.SaveChangesAsync();
         return Results.Ok(new { Message = "Test data cleared" });
@@ -265,6 +287,7 @@ if (app.Environment.IsEnvironment("Testing"))
                 return Results.ValidationProblem(validationResult.ToDictionary());
             }
 
+            // Sanitize inline to guarantee the testing helpers match production behavior
             var sanitizedComments = string.IsNullOrEmpty(seed.Comments)
                 ? null
                 : InputSanitizer.SanitizeText(seed.Comments);
