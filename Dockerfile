@@ -1,11 +1,11 @@
 # syntax=docker/dockerfile:1
 
 # Build the Vue frontend assets
-FROM node:22-alpine3.20 AS frontend-builder
+FROM node:22-alpine AS frontend-builder
 WORKDIR /app/frontend
-RUN apk --no-cache update && apk --no-cache upgrade
+RUN apk --no-cache update && apk --no-cache upgrade && apk --no-cache add --virtual .build-deps && apk del .build-deps
 COPY frontend/package*.json ./
-RUN npm ci
+RUN npm ci --only=production && npm cache clean --force
 COPY frontend/ .
 RUN npm run build
 
