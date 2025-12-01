@@ -66,11 +66,65 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Read current version
+        id: version
+        run: |
+          VERSION=$(cat VERSION | tr -d ' \r\n')
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION file must contain semantic version (e.g. 1.2.3)" >&2
+            exit 1
+          fi
+          echo "current=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Push Docker image
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          IMAGE: jackyxhb/jacklimited
+          VERSION: ${{ steps.version.outputs.current }}
         run: |
-          IMAGE=jackyxhb/jacklimited
           docker tag jacklimited:ci "$IMAGE:${GITHUB_SHA}"
-          docker tag jacklimited:ci "$IMAGE:latest"
+          docker tag jacklimited:ci "$IMAGE:${VERSION}"
           docker push "$IMAGE:${GITHUB_SHA}"
-          docker push "$IMAGE:latest"
+          docker push "$IMAGE:${VERSION}"
+
+      - name: Auto bump version
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          CURRENT_VERSION: ${{ steps.version.outputs.current }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          LEVEL="patch"
+          if echo "$COMMIT_MESSAGE" | grep -qi '\[bump minor\]'; then
+            LEVEL="minor"
+          elif echo "$COMMIT_MESSAGE" | grep -qi '\[bump major\]'; then
+            LEVEL="major"
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          case "$LEVEL" in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "$NEXT_VERSION" > VERSION
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION
+          if git diff --cached --quiet; then
+            echo "No version change detected; nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore: bump version to $NEXT_VERSION [skip ci]"
+          git push

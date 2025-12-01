@@ -181,6 +181,14 @@ The container listens on `http://localhost:8080` and serves both the API and the
 - `POST /testing/reset` (Testing env only, `X-Test-Auth` required) - Clear all surveys
 - `POST /testing/seed` (Testing env only, `X-Test-Auth` required) - Seed surveys for deterministic tests
 
+## Versioning
+
+- The repository root `VERSION` file is the single source of truth for the semantic version (format `MAJOR.MINOR.PATCH`).
+- GitHub Actions reads that value to tag Docker images (`jackyxhb/jacklimited:<version>` plus the commit SHA).
+- After a successful push of those images on `main`, the workflow automatically bumps the patch number, commits the change as `chore: bump version to X.Y.Z [skip ci]`, and pushes it back.
+- To request a larger jump, include `[bump minor]` or `[bump major]` in the triggering commit message; the workflow resets lower-order segments accordingly.
+- Manual edits to `VERSION` are still possible (for example before cutting a release branch), but avoid combining them with the automated bump in the same push.
+
 ## CI/CD
 
 Automated validation runs through GitHub Actions (`.github/workflows/ci.yml`) on every push and pull request targeting `main`. The workflow:
@@ -188,7 +196,8 @@ Automated validation runs through GitHub Actions (`.github/workflows/ci.yml`) on
 - Builds and tests all .NET 9 projects.
 - Installs Node 22, lints, runs Vitest unit tests, and builds the frontend.
 - Builds the Docker image to ensure containerization stays healthy.
-- On pushes to `main`, logs into Docker Hub (using `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repo secrets) and pushes `jackyxhb/jacklimited` tagged with the commit SHA and `latest`.
+- On pushes to `main`, logs into Docker Hub (using `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repo secrets) and pushes `jackyxhb/jacklimited` tagged with the commit SHA and the semantic version from `VERSION`.
+- Once the pushes succeed, the workflow bumps `VERSION` (patch by default) and commits the change with `[skip ci]` so the automation does not loop.
 
 ## Architecture Decision Records
 
