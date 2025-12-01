@@ -32,46 +32,37 @@ test('displays NPS and rating analytics', async ({ page }) => {
   await expect(page.locator('.rating-distribution canvas')).toBeVisible();
 });
 
-test('NPS chart shows correct promoter/passive/detractor distribution', async ({ page }) => {
-  // Submit surveys with different ratings
-  await page.goto('/survey');
+test('NPS chart shows correct promoter/passive/detractor distribution', async ({ page, request }) => {
+  // Reset test data and seed a known distribution directly via the API
+  await request.post('/testing/reset');
 
-  const testCases = [
-    { rating: '10' },
-    { rating: '9' },
-    { rating: '8' },
-    { rating: '7' },
-    { rating: '6' },
-    { rating: '5' }
-  ];
+  const testCases = [10, 9, 8, 7, 6, 5];
+  await request.post('/testing/seed', {
+    data: testCases.map((rating) => ({
+      likelihoodToRecommend: rating,
+      comments: null,
+      email: null,
+    })),
+  });
 
-  // Submit all test cases
-  for (const testCase of testCases) {
-    await page.fill('input[type="number"]', testCase.rating);
-    await page.click('button[type="submit"]');
-    // Wait for form reset as confirmation of submission
-    await expect(page.locator('input[type="number"]')).toHaveValue('5');
-  }
-
-  // Navigate back to analytics to check the results
   await page.goto('/analytics');
 
   // Check that NPS chart is visible and contains data
   await expect(page.locator('.nps-chart canvas')).toBeVisible();
 
-  // Verify the NPS value is displayed and is a valid number
-  const finalNpsText = await page.locator('.nps-value').textContent();
-  expect(finalNpsText).toMatch(/^NPS: -?\d+(?:\.\d+)?$/);
+  const npsValueLocator = page.locator('.nps-value');
+  await expect(npsValueLocator).toHaveText(/^NPS: -?\d+(?:\.\d+)?$/);
 
-  // Verify response count has increased by the number of submissions
-  const finalResponseText = await page.locator('.response-count').textContent();
-  expect(finalResponseText).toMatch(/Total Responses: \d+/);
-  const finalResponseMatch = finalResponseText!.match(/Total Responses: (\d+)/);
-  const finalResponses = parseInt(finalResponseMatch![1]);
+  const responseCountLocator = page.locator('.response-count');
+  await expect(responseCountLocator).toHaveText(new RegExp(`Total Responses: ${testCases.length}`));
+
+  const finalResponseText = await responseCountLocator.innerText();
+  const finalResponseMatch = finalResponseText.match(/Total Responses: (\d+)/);
+  const finalResponses = parseInt(finalResponseMatch![1], 10);
   expect(finalResponses).toBe(testCases.length);
 
-  // Verify that the NPS value is a valid number within expected range
-  const finalNpsMatch = finalNpsText!.match(/NPS: (-?\d+(?:\.\d+)?)/);
+  const finalNpsText = await npsValueLocator.innerText();
+  const finalNpsMatch = finalNpsText.match(/NPS: (-?\d+(?:\.\d+)?)/);
   const finalNps = parseFloat(finalNpsMatch![1]);
   expect(typeof finalNps).toBe('number');
   expect(finalNps).toBeGreaterThanOrEqual(-100);

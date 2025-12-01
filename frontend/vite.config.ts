@@ -21,6 +21,10 @@ export default defineConfig({
         target: 'http://localhost:5264',
         changeOrigin: true,
       },
+      '/testing': {
+        target: 'http://localhost:5264',
+        changeOrigin: true,
+      },
     },
   },
 })

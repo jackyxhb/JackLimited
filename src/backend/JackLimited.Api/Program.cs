@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using JackLimited.Application;
 using JackLimited.Domain;
 using JackLimited.Infrastructure;
@@ -216,6 +217,51 @@ app.MapGet("/api/survey/distribution", async (ISurveyRepository repository) =>
         );
     }
 });
+
+if (app.Environment.IsEnvironment("Testing"))
+{
+    app.MapPost("/testing/reset", async (JackLimitedDbContext dbContext) =>
+    {
+        dbContext.Surveys.RemoveRange(dbContext.Surveys);
+        await dbContext.SaveChangesAsync();
+        return Results.Ok(new { Message = "Test data cleared" });
+    });
+
+    app.MapPost("/testing/seed", async ([FromBody] IEnumerable<SurveyRequest> seeds, IValidator<SurveyRequest> validator, JackLimitedDbContext dbContext) =>
+    {
+        if (seeds == null)
+        {
+            return Results.BadRequest(new { Error = "Seed payload is required" });
+        }
+
+        var seedList = seeds.ToList();
+        foreach (var seed in seedList)
+        {
+            var validationResult = await validator.ValidateAsync(seed);
+            if (!validationResult.IsValid)
+            {
+                return Results.ValidationProblem(validationResult.ToDictionary());
+            }
+
+            var sanitizedComments = string.IsNullOrEmpty(seed.Comments)
+                ? null
+                : InputSanitizer.SanitizeText(seed.Comments);
+            var sanitizedEmail = InputSanitizer.SanitizeEmail(seed.Email);
+
+            dbContext.Surveys.Add(new Survey
+            {
+                Id = Guid.NewGuid(),
+                LikelihoodToRecommend = seed.LikelihoodToRecommend,
+                Comments = sanitizedComments,
+                Email = sanitizedEmail,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        await dbContext.SaveChangesAsync();
+        return Results.Ok(new { Count = seedList.Count });
+    });
+}
 
 app.Run();
 
