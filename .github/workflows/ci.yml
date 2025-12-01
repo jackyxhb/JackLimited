@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore backend
+        run: dotnet restore JackLimited.sln
+
+      - name: Build backend
+        run: dotnet build JackLimited.sln --no-restore --configuration Release
+
+      - name: Test backend
+        run: dotnet test src/backend/JackLimited.Tests/JackLimited.Tests.csproj --no-build --configuration Release --verbosity normal
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: Lint frontend
+        run: npm run lint -- --no-fix
+        working-directory: frontend
+        env:
+          CI: true
+
+      - name: Frontend unit tests
+        run: npm run test:unit -- --runInBand
+        working-directory: frontend
+        env:
+          CI: true
+
+      - name: Frontend build
+        run: npm run build
+        working-directory: frontend
+        env:
+          CI: true
+
+      - name: Docker build
+        run: docker build -t jacklimited:ci .
+
+      - name: Log in to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Docker image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          IMAGE=jackyxhb/jacklimited
+          docker tag jacklimited:ci "$IMAGE:${GITHUB_SHA}"
+          docker tag jacklimited:ci "$IMAGE:latest"
+          docker push "$IMAGE:${GITHUB_SHA}"
+          docker push "$IMAGE:latest"

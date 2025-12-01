@@ -18,3 +18,5 @@ declare module 'vue' {
     ArrowRightIcon: typeof import('lucide-vue-next')['ArrowRight']
   }
 }
+
+export {}

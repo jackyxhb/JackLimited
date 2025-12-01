@@ -31,7 +31,7 @@ A full-stack web application for collecting and analyzing customer feedback thro
 
 ## Prerequisites
 
-- .NET 8.0 or later
+- .NET 9.0 or later
 - Node.js 18+ and npm
 - PostgreSQL (for production)
 
@@ -161,6 +161,17 @@ http://localhost:5264/swagger
 
 Use the explorer to try requests, inspect schemas, or export the OpenAPI JSON (`/swagger/v1/swagger.json`).
 
+### Docker Container
+
+You can run the full stack (published backend plus built frontend assets) via Docker:
+
+```bash
+docker build -t jacklimited .
+docker run -p 8080:8080 jacklimited
+```
+
+The container listens on `http://localhost:8080` and serves both the API and the compiled SPA.
+
 ## API Endpoints
 
 - `POST /api/survey` - Submit a survey response
@@ -169,6 +180,15 @@ Use the explorer to try requests, inspect schemas, or export the OpenAPI JSON (`
 - `GET /api/survey/distribution` - Get rating distribution
 - `POST /testing/reset` (Testing env only, `X-Test-Auth` required) - Clear all surveys
 - `POST /testing/seed` (Testing env only, `X-Test-Auth` required) - Seed surveys for deterministic tests
+
+## CI/CD
+
+Automated validation runs through GitHub Actions (`.github/workflows/ci.yml`) on every push and pull request targeting `main`. The workflow:
+
+- Builds and tests all .NET 9 projects.
+- Installs Node 22, lints, runs Vitest unit tests, and builds the frontend.
+- Builds the Docker image to ensure containerization stays healthy.
+- On pushes to `main`, logs into Docker Hub (using `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repo secrets) and pushes `jackyxhb/jacklimited` tagged with the commit SHA and `latest`.
 
 ## Architecture Decision Records
 
