@@ -1,5 +1,30 @@
 # Release Notes
 
+## Version 1.0.4 - Maintenance Release (December 2, 2025)
+
+### Updates
+- **Framework Upgrade**: Migrated backend from .NET 9.0 to .NET 8.0 for stability and LTS support.
+- **Package Updates**: Updated NuGet packages to latest compatible versions, including security patches for Npgsql (CVE-2024-32655).
+- **Docker Improvements**: Switched to Ubuntu-based .NET 8.0 images to address zlib vulnerabilities (CVE-2023-45853).
+- **CI/CD Enhancements**: Added Trivy vulnerability scanning in CI pipeline; implemented automatic version bumping and Git tagging.
+- **Security**: Enhanced container security with updated base images and dependency patches.
+
+### Technical Implementation
+- **Frontend**: Vue 3 with TypeScript, Vite build tool, Pinia state management, Vue Router, Playwright E2E testing, Vitest unit testing.
+- **Backend**: ASP.NET Core Minimal API (.NET 8.0), Entity Framework Core 8.0.4, FluentValidation, input sanitization.
+- **Architecture**: Clean Architecture with separate Domain, Application, Infrastructure, and API layers.
+- **Security**: Input sanitization to prevent XSS, proper error handling, vulnerability scanning.
+
+### Known Issues
+- None reported.
+
+### Future Enhancements
+- User authentication and authorization
+- Survey templates and customization
+- Advanced analytics and reporting
+- Email notifications
+- Multi-language support
+
 ## Version 1.0.0 - Initial Release (November 30, 2025)
 
 ### New Features
