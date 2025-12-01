@@ -5,9 +5,10 @@ FROM node:22-alpine AS frontend-builder
 WORKDIR /app/frontend
 RUN apk --no-cache update && apk --no-cache upgrade && apk --no-cache add --virtual .build-deps && apk del .build-deps
 COPY frontend/package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci
 COPY frontend/ .
 RUN npm run build
+RUN npm prune --omit=dev && npm cache clean --force
 
 # Publish the ASP.NET Core backend
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS backend-builder
