@@ -21,6 +21,10 @@ RUN dotnet publish src/backend/JackLimited.Api/JackLimited.Api.csproj -c Release
 # Final runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
+RUN apt-get update && \
+    apt-get install --only-upgrade zlib1g && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 ENV ASPNETCORE_URLS=http://+:8080
 COPY --from=backend-builder /app/publish .
 COPY --from=frontend-builder /app/frontend/dist ./wwwroot
