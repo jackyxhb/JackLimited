@@ -1,10 +1,9 @@
 # syntax=docker/dockerfile:1
 
 # Build the Vue frontend assets
-FROM node:22-alpine AS frontend-builder
+FROM node:22-slim AS frontend-builder
 WORKDIR /app/frontend
 ENV NODE_OPTIONS="--max-old-space-size=8192"
-RUN apk --no-cache update && apk --no-cache upgrade && apk --no-cache add --virtual .build-deps && apk del .build-deps
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ .
