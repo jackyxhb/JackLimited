@@ -1,0 +1,50 @@
+{
+  "name": "jacklimited",
+  "version": "1.1.0",
+  "description": "Customer feedback and NPS analytics platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "cd frontend && npm run test:unit",
+    "test:e2e": "cd frontend && npm run test:e2e",
+    "test:docker": "./test-docker-image.sh",
+    "test:docker:api": "./test-docker-image.sh api",
+    "test:docker:integration": "./test-docker-image.sh integration",
+    "test:container": "node test-docker-container.js",
+    "test:container:api": "node test-docker-container.js --api-only",
+    "test:container:performance": "node test-docker-container.js --performance",
+    "test:container:security": "node test-docker-container.js --security",
+    "build": "cd frontend && npm run build",
+    "lint": "cd frontend && npm run lint",
+    "docker:build": "docker build -t jacklimited .",
+    "docker:run": "docker run -p 8080:8080 jacklimited",
+    "docker:test": "npm run test:docker && npm run test:container",
+    "ci": "npm run lint && npm run test:unit && npm run build && npm run test:docker"
+  },
+  "keywords": [
+    "nps",
+    "analytics",
+    "feedback",
+    "survey",
+    "docker",
+    "tdd",
+    "bdd"
+  ],
+  "author": "Jack Xiao",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "wait-on": "^7.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jackyxhb/JackLimited.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jackyxhb/JackLimited/issues"
+  },
+  "homepage": "https://github.com/jackyxhb/JackLimited#readme"
+}

@@ -59,8 +59,13 @@ jobs:
         env:
           CI: true
 
-      - name: Docker build
-        run: docker build -t jacklimited:ci .
+      - name: Install jq for JSON parsing
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Docker container tests
+        run: |
+          chmod +x test-docker-image.sh
+          ./test-docker-image.sh
 
       - name: Run Trivy scan
         run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/aquasecurity/trivy:latest image jacklimited:ci --format table --exit-code 1 --severity HIGH,CRITICAL
