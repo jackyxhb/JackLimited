@@ -170,7 +170,13 @@ docker build -t jacklimited .
 docker run -p 8080:8080 jacklimited
 ```
 
-The container uses Ubuntu-based .NET 8.0 images and listens on `http://localhost:8080`, serving both the API and the compiled SPA.
+Or use Docker Compose for easier management, including a PostgreSQL database for local development:
+
+```bash
+docker-compose up --build
+```
+
+This starts the app on `http://localhost:8081` and PostgreSQL on `localhost:5433`. The app uses Ubuntu-based .NET 8.0 images and serves both the API and the compiled SPA. Data persists in a Docker volume.
 
 ## API Endpoints
 

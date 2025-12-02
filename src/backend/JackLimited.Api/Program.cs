@@ -69,6 +69,16 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+// Run database migrations in production
+if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<JackLimitedDbContext>();
+        context.Database.Migrate();
+    }
+}
+
 // Configure forwarded headers (important for proxies like Azure App Service)
 app.UseForwardedHeaders(new ForwardedHeadersOptions
 {
@@ -133,7 +143,7 @@ app.UseStaticFiles();
 // Use CORS
 app.UseCors();
 
-app.MapGet("/", () => "Hello World!");
+app.MapFallbackToFile("index.html");
 
 // Minimal API endpoint with enhanced error handling
 app.MapPost("/api/survey", async (SurveyRequest request, IValidator<SurveyRequest> validator, ISurveyRepository repository) =>

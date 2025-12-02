@@ -1,5 +1,6 @@
 using JackLimited.Domain;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace JackLimited.Infrastructure;
 
@@ -19,5 +20,16 @@ public class JackLimitedDbContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.CreatedAt).IsRequired();
         });
+    }
+}
+
+public class JackLimitedDbContextFactory : IDesignTimeDbContextFactory<JackLimitedDbContext>
+{
+    public JackLimitedDbContext CreateDbContext(string[] args)
+    {
+        var optionsBuilder = new DbContextOptionsBuilder<JackLimitedDbContext>();
+        optionsBuilder.UseNpgsql("Host=localhost;Database=jacklimited;Username=postgres;Password=postgres");
+
+        return new JackLimitedDbContext(optionsBuilder.Options);
     }
 }
