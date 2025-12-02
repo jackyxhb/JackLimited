@@ -213,9 +213,9 @@ const exportChart = () => {
   text-align: center;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  background: var(--color-surface);
   border-radius: 8px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--color-border);
 }
 
 .export-button {
@@ -240,20 +240,20 @@ const exportChart = () => {
 
 .average-label {
   font-size: 0.9rem;
-  color: #6c757d;
+  color: var(--color-text-secondary);
   margin-right: 0.5rem;
 }
 
 .average-value {
   font-size: 2rem;
   font-weight: bold;
-  color: #007bff;
+  color: var(--color-primary);
   margin-right: 0.5rem;
 }
 
 .total-responses {
   font-size: 0.85rem;
-  color: #6c757d;
+  color: var(--color-text-secondary);
 }
 
 .loading-container, .error-container {
@@ -269,8 +269,8 @@ const exportChart = () => {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #007bff;
+  border: 4px solid var(--color-border);
+  border-top: 4px solid var(--color-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -282,9 +282,9 @@ const exportChart = () => {
 }
 
 .error-container {
-  color: #721c24;
-  background: #f8d7da;
-  border: 1px solid #f5c6cb;
+  color: var(--color-error);
+  background: var(--color-surface);
+  border: 1px solid var(--color-error);
   border-radius: 8px;
 }
 
