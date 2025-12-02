@@ -6,11 +6,13 @@ A full-stack web application for collecting and analyzing customer feedback thro
 
 - Submit customer feedback surveys with ratings and comments
 - Real-time NPS calculation and analytics (NPS, averages, distributions)
+- Interactive charts with dark/light theme support
 - Testing-only reset/seed endpoints secured by an API key for deterministic suites
 - Responsive Vue 3 frontend with dark/light theme toggle
 - ASP.NET Core Minimal API backend with shared sanitization/validation pipeline
 - PostgreSQL database for production, in-memory provider for development/testing
 - CORS enabled for cross-origin requests
+- Docker containerization with security-hardened images
 
 ## Tech Stack
 
@@ -176,7 +178,7 @@ Or use Docker Compose for easier management, including a PostgreSQL database for
 docker-compose up --build
 ```
 
-This starts the app on `http://localhost:8081` and PostgreSQL on `localhost:5433`. The app uses Ubuntu-based .NET 8.0 images and serves both the API and the compiled SPA. Data persists in a Docker volume.
+This starts the app on `http://localhost:8081` and PostgreSQL on `localhost:5433`. The app uses Ubuntu-based .NET 8.0 images and security-hardened Node.js slim images, serving both the API and the compiled SPA. Data persists in a Docker volume.
 
 ## API Endpoints
 
@@ -201,10 +203,10 @@ Automated validation runs through GitHub Actions (`.github/workflows/ci.yml`) on
 
 - Builds and tests all .NET 8.0 projects.
 - Installs Node 22, lints, runs Vitest unit tests, and builds the frontend.
-- Builds the Docker image (using Ubuntu-based .NET 8.0 images) to ensure containerization stays healthy.
+- Builds the Docker image (using Ubuntu-based .NET 8.0 and Node.js slim images) to ensure containerization stays healthy.
 - Scans the Docker image for HIGH and CRITICAL vulnerabilities using Trivy; fails the build if any are found.
 - On pushes to `main`, logs into Docker Hub (using `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repo secrets) and pushes `jackyxhb/jacklimited` tagged with the commit SHA and the semantic version from `VERSION`.
-- Creates a Git tag (e.g., `v1.0.5`) on the successful commit.
+- Creates a Git tag (e.g., `v1.1.0`) on the successful commit.
 - Once the pushes succeed, the workflow bumps `VERSION` (patch by default) and commits the change with `[skip ci]` so the automation does not loop.
 
 ## Architecture Decision Records

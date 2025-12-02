@@ -1,5 +1,31 @@
 # Release Notes
 
+## Version 1.1.0 - Feature Release (December 2, 2025)
+
+### New Features
+- **Dark Mode Support**: Rating distribution component now properly supports dark/light theme switching with adaptive colors.
+- **Chart Rendering Improvements**: Enhanced RatingDistribution component with better data handling, full rating scale display (1-10), and improved Chart.js integration.
+
+### Updates
+- **Security Enhancement**: Switched Docker frontend builder from `node:22-alpine` to `node:22-slim` to resolve high-severity vulnerabilities in Alpine base image.
+- **UI/UX Improvements**: Rating distribution chart now displays all rating bars (including zero values) and adapts to theme changes seamlessly.
+
+### Technical Implementation
+- **Frontend**: Vue 3 with TypeScript, Vite build tool, Pinia state management, Vue Router, Playwright E2E testing, Vitest unit testing, Chart.js for data visualization.
+- **Backend**: ASP.NET Core Minimal API (.NET 8.0), Entity Framework Core 8.0.4, FluentValidation, input sanitization.
+- **Architecture**: Clean Architecture with separate Domain, Application, Infrastructure, and API layers.
+- **Security**: Input sanitization to prevent XSS, proper error handling, vulnerability scanning, secure Docker base images.
+
+### Known Issues
+- None reported.
+
+### Future Enhancements
+- User authentication and authorization
+- Survey templates and customization
+- Advanced analytics and reporting
+- Email notifications
+- Multi-language support
+
 ## Version 1.0.4 - Maintenance Release (December 2, 2025)
 
 ### Updates
