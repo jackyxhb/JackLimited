@@ -29,17 +29,15 @@
           📥 Download
         </button>
       </div>
-      <canvas ref="chartCanvas"></canvas>
+      <canvas ref="chartCanvas" style="width: 100%; height: 100%;"></canvas>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch, onUnmounted, computed } from 'vue'
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
+import Chart from 'chart.js/auto'
 import { useSurveyStore } from '@/stores/survey'
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 interface Props {
   isLoading?: boolean
@@ -54,14 +52,20 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const chartCanvas = ref<HTMLCanvasElement>()
-let chart: ChartJS | null = null
+let chart: Chart | null = null
 
 const surveyStore = useSurveyStore()
 const average = surveyStore.average
 const distribution = surveyStore.distribution
 
+const fullDistribution = computed(() => {
+  const full = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0}
+  Object.assign(full, distribution)
+  return full
+})
+
 const totalResponses = computed(() => {
-  return Object.values(distribution).reduce((sum, count) => sum + count, 0)
+  return Object.values(fullDistribution.value).reduce((sum, count) => sum + count, 0)
 })
 
 const createChart = () => {
@@ -70,10 +74,10 @@ const createChart = () => {
   const ctx = chartCanvas.value.getContext('2d')
   if (!ctx) return
 
-  const labels = Object.keys(distribution).map(key => `Rating ${key}`)
-  const data = Object.values(distribution)
+  const labels = Object.keys(fullDistribution.value).map(key => `Rating ${key}`)
+  const data = Object.values(fullDistribution.value)
 
-  chart = new ChartJS(ctx, {
+  chart = new Chart(ctx, {
     type: 'bar',
     data: {
       labels,
@@ -140,8 +144,8 @@ const createChart = () => {
 const updateChart = () => {
   if (!chart || !chart.data.datasets[0]) return
 
-  const labels = Object.keys(distribution).map(key => `Rating ${key}`)
-  const data = Object.values(distribution)
+  const labels = Object.keys(fullDistribution.value).map(key => `Rating ${key}`)
+  const data = Object.values(fullDistribution.value)
 
   chart.data.labels = labels
   chart.data.datasets[0].data = data
