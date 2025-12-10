@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using OpenTelemetry.Extensions.Hosting;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -89,69 +90,69 @@ var serviceName = builder.Environment.ApplicationName ?? "JackLimited.Api";
 var serviceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
 var environmentName = builder.Environment.EnvironmentName;
 
-// var openTelemetryBuilder = builder.Services
-//     .AddOpenTelemetry()
-//     .ConfigureResource(resource =>
-//     {
-//         resource.AddService(
-//             serviceName: serviceName,
-//             serviceVersion: serviceVersion,
-//             serviceInstanceId: Environment.MachineName);
-//         resource.AddAttributes(new[]
-//         {
-//             new KeyValuePair<string, object>("deployment.environment", environmentName)
-//         });
-//     });
+var openTelemetryBuilder = builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource =>
+    {
+        resource.AddService(
+            serviceName: serviceName,
+            serviceVersion: serviceVersion,
+            serviceInstanceId: Environment.MachineName);
+        resource.AddAttributes(new[]
+        {
+            new KeyValuePair<string, object>("deployment.environment", environmentName)
+        });
+    });
 
-// openTelemetryBuilder.WithTracing(tracing =>
-// {
-//     tracing
-//         .AddAspNetCoreInstrumentation()
-//         .AddHttpClientInstrumentation()
-//         .AddEntityFrameworkCoreInstrumentation()
-//         .AddSource("JackLimited.Api");
+openTelemetryBuilder.WithTracing(tracing =>
+{
+    tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddSource("JackLimited.Api");
 
-//     if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var traceEndpoint))
-//     {
-//         tracing.AddOtlpExporter(options => options.Endpoint = traceEndpoint);
-//     }
-// });
+    if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var traceEndpoint))
+    {
+        tracing.AddOtlpExporter(options => options.Endpoint = traceEndpoint);
+    }
+});
 
-// openTelemetryBuilder.WithMetrics(metrics =>
-// {
-//     metrics
-//         .AddAspNetCoreInstrumentation()
-//         .AddHttpClientInstrumentation()
-//         .AddRuntimeInstrumentation()
-//         .AddMeter("JackLimited.Api");
+openTelemetryBuilder.WithMetrics(metrics =>
+{
+    metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddMeter("JackLimited.Api");
 
-//     if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var metricEndpoint))
-//     {
-//         metrics.AddOtlpExporter(options => options.Endpoint = metricEndpoint);
-//     }
-// });
+    if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var metricEndpoint))
+    {
+        metrics.AddOtlpExporter(options => options.Endpoint = metricEndpoint);
+    }
+});
 
-// builder.Logging.AddOpenTelemetry(logging =>
-// {
-//     logging.IncludeFormattedMessage = true;
-//     logging.IncludeScopes = true;
-//     logging.ParseStateValues = true;
-//     logging.SetResourceBuilder(
-//         ResourceBuilder.CreateDefault()
-//             .AddService(
-//                 serviceName: serviceName,
-//                 serviceVersion: serviceVersion,
-//                 serviceInstanceId: Environment.MachineName)
-//             .AddAttributes(new[]
-//             {
-//                 new KeyValuePair<string, object>("deployment.environment", environmentName)
-//             }));
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeFormattedMessage = true;
+    logging.IncludeScopes = true;
+    logging.ParseStateValues = true;
+    logging.SetResourceBuilder(
+        ResourceBuilder.CreateDefault()
+            .AddService(
+                serviceName: serviceName,
+                serviceVersion: serviceVersion,
+                serviceInstanceId: Environment.MachineName)
+            .AddAttributes(new[]
+            {
+                new KeyValuePair<string, object>("deployment.environment", environmentName)
+            }));
 
-//     if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var logEndpoint))
-//     {
-//         logging.AddOtlpExporter(options => options.Endpoint = logEndpoint);
-//     }
-// });
+    if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var logEndpoint))
+    {
+        logging.AddOtlpExporter(options => options.Endpoint = logEndpoint);
+    }
+});
 
 builder.Services.AddSingleton<ActivitySource>(_ => new ActivitySource("JackLimited.Api"));
 builder.Services.AddSingleton<SurveyMetrics>();

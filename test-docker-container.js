@@ -178,7 +178,7 @@ class DockerTestSuite {
 
         // Wait for application to be ready
         log('blue', 'Waiting for application to be ready...');
-        const appReady = await DockerManager.waitForHealth(CONFIG.apiBaseUrl);
+        const appReady = await DockerManager.waitForHealth(`${CONFIG.apiBaseUrl}/readyz`);
 
         if (!appReady) {
             const logs = DockerManager.execute(`docker logs ${CONFIG.containerName}`, { silent: true });
@@ -191,15 +191,31 @@ class DockerTestSuite {
     async testHealthChecks() {
         log('cyan', 'Testing health checks...');
 
-        try {
-            const response = await fetch(`${CONFIG.apiBaseUrl}/health`);
-            if (response.ok) {
-                logTest('Health Check', 'PASS', 'Health endpoint responds 200');
-            } else {
-                logTest('Health Check', 'FAIL', `Health endpoint returned ${response.status}`);
+        const checks = [
+            { name: 'Liveness', path: '/healthz' },
+            { name: 'Readiness', path: '/readyz', expectReadyTag: true }
+        ];
+
+        for (const check of checks) {
+            try {
+                const response = await fetch(`${CONFIG.apiBaseUrl}${check.path}`);
+                if (!response.ok) {
+                    logTest(`${check.name} Check`, 'FAIL', `${check.path} returned ${response.status}`);
+                    continue;
+                }
+
+                const payload = await response.json();
+                const statusHealthy = payload?.status === 'Healthy';
+                const readyTagPresent = !check.expectReadyTag || payload?.checks?.some(entry => entry.tags?.includes('ready'));
+
+                if (statusHealthy && readyTagPresent) {
+                    logTest(`${check.name} Check`, 'PASS', `${check.path} healthy`);
+                } else {
+                    logTest(`${check.name} Check`, 'FAIL', `Unexpected payload: ${JSON.stringify(payload)}`);
+                }
+            } catch (error) {
+                logTest(`${check.name} Check`, 'FAIL', `Request failed: ${error.message}`);
             }
-        } catch (error) {
-            logTest('Health Check', 'FAIL', `Health check failed: ${error.message}`);
         }
     }
 
