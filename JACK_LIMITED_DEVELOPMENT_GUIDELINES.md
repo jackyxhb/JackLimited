@@ -4,9 +4,9 @@ You are working on **Jack Limited Feedback Portal** – a production-grade web a
 - Backend: ASP.NET Core 9.0 Minimal APIs
 - Frontend: Vue 3 + TypeScript + Vite + Pinia + Chart.js
 - Database: PostgreSQL + EF Core 9
-- Architecture: Vertical Slice + Clean Architecture principles
-- Testing: 100% TDD + BDD (xUnit + SpecFlow or bUnit for Blazor if added later)
-- Deployment: Azure App Service (primary) / AWS Elastic Beanstalk (secondary)
+- Architecture: Layered (Api → Application → Domain → Infrastructure). MediatR/vertical slices are still aspirational and should only be mentioned in future-focused RFCs—do not assume they exist in the code today.
+- Testing: xUnit (unit + integration) for .NET, Vitest for Vue unit tests, and Playwright for E2E. SpecFlow BDD is not currently part of the solution; add it only when we explicitly schedule the migration.
+- Deployment: Azure App Service via Azure Pipelines (primary). AWS and GitHub Actions references are historic and should not block current work.
 
 ## CORE PHILOSOPHY – RED → GREEN → REFACTOR (TDD) + GIVEN-WHEN-THEN (BDD)
 
@@ -19,7 +19,7 @@ Every single feature, bug fix, or refactoring MUST follow this cycle:
 → **Never write production code without a failing test first**  
 → **Never merge a PR with less than 90% test coverage on new code**
 
-## PROJECT STRUCTURE (DO NOT DEVIATE – Copilot will enforce this)
+## PROJECT STRUCTURE (CURRENT REALITY)
 
 src/
 ├── backend/
@@ -30,7 +30,7 @@ src/
 │   └── JackLimited.Tests/                → xUnit + FluentAssertions + NSubstitute
 │       ├── UnitTests/
 │       ├── IntegrationTests/            → WebApplicationFactory
-│       └── Features/                     → BDD .feature files (SpecFlow recommended)
+│       └── (future) Features/            → We do not yet have SpecFlow .feature files. If you add them, keep them here.
 frontend/
 └── docker-compose.yml
 
@@ -44,9 +44,10 @@ frontend/
 // Then implement the minimal API endpoint and validator
 // Use FluentValidation and return 201 Created with Location header
 
-### 2. Generate BDD feature file first
+### 2. Generate BDD feature file first (Optional / future work)
 // @workspace: Generate a SpecFlow .feature file for "Customer submits feedback survey"
 // Include scenarios: Happy path, Invalid ratings (1-5), Missing required fields, NPS calculation
+// Only run this workflow when the team explicitly requests SpecFlow coverage.
 
 ### 3. Generate unit test for a domain rule
 // @workspace: Write a parameterized xUnit test for NPS calculation
@@ -72,12 +73,13 @@ frontend/
 // @workspace: Add FluentValidation rule: Email must be valid if provided, Comments max 1000 chars
 // Generate failing test first that sends invalid email and expects 400 with error message
 
-## MANDATORY TESTING RULES (Copilot will remind you)
+## MANDATORY TESTING RULES (CURRENT)
 
-- Every endpoint → at least 1 integration test using `WebApplicationFactory`
+- Every backend endpoint → at least 1 integration test using `WebApplicationFactory`
 - Every validator → unit tested with FluentValidation.TestHelper
-- Every pure function (e.g., NPS calculation) → 100% coverage with Theory + MemberData
-- All tests must run on CI (GitHub Actions already configured)
+- Pure functions (e.g., NPS calculation) → cover with Theory + MemberData
+- Frontend: add Vitest coverage for stores/components and Playwright coverage for critical flows
+- CI currently runs through the Azure Pipelines definition in `azure-pipelines.yml`; keep it green by running `dotnet test JackLimited.sln` and `npm run test:unit -- --run` locally before pushing.
 - Use `FluentAssertions` for readable assertions
 - Use `NSubstitute` for mocking (not Moq)
 
