@@ -4,9 +4,9 @@ services:
     ports:
       - "8081:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_AllowedHosts=*
-      - ConnectionStrings__DefaultConnection=Host=postgres;Database=jacklimited;Username=postgres;Password=password
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_AllowedHosts: "*"
+      ConnectionStrings__DefaultConnection: ${JACKLIMITED_DB_CONNECTION:?Set JACKLIMITED_DB_CONNECTION}
     depends_on:
       postgres:
         condition: service_healthy
@@ -15,9 +15,9 @@ services:
   postgres:
     image: postgres:15-alpine
     environment:
-      - POSTGRES_DB=jacklimited
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      POSTGRES_DB: ${JACKLIMITED_DB_NAME:-jacklimited}
+      POSTGRES_USER: ${JACKLIMITED_DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${JACKLIMITED_DB_PASSWORD:?Set JACKLIMITED_DB_PASSWORD}
     ports:
       - "5433:5432"
     volumes:

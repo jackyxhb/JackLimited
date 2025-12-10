@@ -1,7 +1,12 @@
 param location string = 'New Zealand North'
 param environment string = 'dev'
-param postgresAdminUsername string = 'jackadmin'
-param postgresAdminPassword string = 'ComplexPassword123!'
+
+@description('Administrator username for the PostgreSQL flexible server.')
+param postgresAdminUsername string
+
+@secure()
+@description('Administrator password for the PostgreSQL flexible server. Provide via secure parameter or key vault reference, do not hard-code.')
+param postgresAdminPassword string
 
 resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2022-12-01' = {
   name: 'jacklimited-postgres-${environment}'

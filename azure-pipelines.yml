@@ -13,6 +13,7 @@ variables:
   apiAppName: jacklimited-api
   resourceGroup: JackSurvey
   artifactName: drop
+  testingApiKey: $(TestingApiKey)
 
 pool:
   vmImage: ubuntu-latest
@@ -42,10 +43,34 @@ stages:
           - task: NodeTool@0
             inputs:
               versionSpec: '20.x'
+          - task: UseDotNet@2
+            inputs:
+              packageType: sdk
+              version: 9.0.x
+          - script: |
+              cd frontend
+              npm ci
+            displayName: Install Frontend Dependencies
+          - script: |
+              cd frontend
+              npm run lint
+            displayName: Lint Frontend
+          - script: |
+              cd frontend
+              npm run test:unit -- --run
+            displayName: Frontend Unit Tests
+          - script: |
+              cd frontend
+              npx playwright install --with-deps
+              export CI=1
+              export VITE_API_BASE_URL=http://localhost:5264
+              npm run test:e2e -- --reporter=line
+            displayName: Playwright E2E Tests
+            env:
+              TESTING_API_KEY: $(testingApiKey)
           - script: |
               cd frontend
               export VITE_API_BASE_URL=https://jacklimited-api.azurewebsites.net
-              npm ci
               npm run build
             displayName: Build Frontend
           - task: ArchiveFiles@2

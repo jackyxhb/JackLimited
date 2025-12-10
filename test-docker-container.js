@@ -11,6 +11,7 @@
 const { execSync, spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 // Configuration
 const CONFIG = {
@@ -21,7 +22,10 @@ const CONFIG = {
     apiBaseUrl: 'http://localhost:8081',
     testTimeout: 30000,
     healthCheckInterval: 2000,
-    maxRetries: 30
+    maxRetries: 30,
+    dbName: process.env.DOCKER_TEST_DB_NAME || 'jacklimited_test',
+    dbUser: process.env.DOCKER_TEST_DB_USER || 'postgres',
+    dbPassword: process.env.DOCKER_TEST_DB_PASSWORD || crypto.randomBytes(12).toString('hex')
 };
 
 // Test results tracking
@@ -115,9 +119,9 @@ class DockerTestSuite {
             --name ${this.dbContainerName}
             --network ${this.networkName}
             --network-alias postgres
-            -e POSTGRES_DB=jacklimited_test
-            -e POSTGRES_USER=postgres
-            -e POSTGRES_PASSWORD=password
+            -e POSTGRES_DB=${CONFIG.dbName}
+            -e POSTGRES_USER=${CONFIG.dbUser}
+            -e POSTGRES_PASSWORD=${CONFIG.dbPassword}
             postgres:15-alpine
         `.replace(/\s+/g, ' '));
 
@@ -130,7 +134,7 @@ class DockerTestSuite {
         let dbReady = false;
         for (let i = 0; i < CONFIG.maxRetries; i++) {
             const healthResult = DockerManager.execute(
-                `docker exec ${this.dbContainerName} pg_isready -U testuser -d jacklimited_test`,
+                `docker exec ${this.dbContainerName} pg_isready -U ${CONFIG.dbUser} -d ${CONFIG.dbName}`,
                 { silent: true }
             );
             if (healthResult.success) {
@@ -167,7 +171,7 @@ class DockerTestSuite {
             --name ${CONFIG.containerName}
             --network ${this.networkName}
             -e ASPNETCORE_ENVIRONMENT=Testing
-            -e ConnectionStrings__DefaultConnection="Host=${this.dbContainerName};Database=jacklimited_test;Username=postgres;Password=password"
+            -e ConnectionStrings__DefaultConnection="Host=${this.dbContainerName};Database=${CONFIG.dbName};Username=${CONFIG.dbUser};Password=${CONFIG.dbPassword}"
             -p 8081:8080
             ${CONFIG.imageName}
         `.replace(/\s+/g, ' '));
