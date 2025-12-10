@@ -1,0 +1,4 @@
+<step title="Incoming Request" date="2025-12-10T04:00:00.491" instance="03aaff" url="/dump" method="GET" type="request" pid="833,1,31" Host="jacksurvey-webapp.scm.azurewebsites.net" User-Agent="AZURECLI/2.80.0 (HOMEBREW)" Accept-Encoding="identity" Authorization="Bea..." x-ms-client-request-id="b145ec14-d57c-11f0-bfff-acde48001122" X-ARR-LOG-ID="b145ec14-d57c-11f0-bfff-acde48001122" CLIENT-IP="203.211.107.34:12867" X-SITE-DEPLOYMENT-ID="jacksurvey-webapp" WAS-DEFAULT-HOSTNAME="jacksurvey-webapp.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/dump" X-Client-IP="203.211.107.34" X-Client-Port="12867" >
+  <step title="Cleanup Xml Logs" date="2025-12-10T04:00:00.494" /><!-- duration: 11ms -->
+  <step title="Outgoing response" date="2025-12-10T04:00:00.745" type="response" statusCode="200" statusText="OK" /><!-- duration: 10ms -->
+</step><!-- duration: 267ms -->
