@@ -41,24 +41,24 @@ if (builder.Environment.IsEnvironment("Development"))
 
 // Add services
 builder.Services.AddValidatorsFromAssembly(typeof(SurveyRequest).Assembly);
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "JackLimited API",
-        Version = "v1",
-        Description = "Endpoints for submitting surveys and retrieving NPS analytics."
-    });
-});
+// builder.Services.AddEndpointsApiExplorer();
+// builder.Services.AddSwaggerGen(options =>
+// {
+//     options.SwaggerDoc("v1", new OpenApiInfo
+//     {
+//         Title = "JackLimited API",
+//         Version = "v1",
+//         Description = "Endpoints for submitting surveys and retrieving NPS analytics."
+//     });
+// });
 
 // Configure rate limiting
-builder.Services.AddMemoryCache();
-builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
-builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
-builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
-builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
-builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+// builder.Services.AddMemoryCache();
+// builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
+// builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+// builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+// builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+// builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
 if (builder.Environment.IsEnvironment("Testing") || builder.Environment.IsEnvironment("Development"))
 {
@@ -68,81 +68,80 @@ if (builder.Environment.IsEnvironment("Testing") || builder.Environment.IsEnviro
 else
 {
     builder.Services.AddDbContext<JackLimitedDbContext>(options =>
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        options.UseInMemoryDatabase("ProdDb"));
 }
 
 builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
-builder.Services.AddHealthChecks()
-    .AddDbContextCheck<JackLimitedDbContext>("database", tags: new[] { "ready" });
+// builder.Services.AddHealthChecks();
 
 var otlpEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"];
 var serviceName = builder.Environment.ApplicationName ?? "JackLimited.Api";
 var serviceVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
 var environmentName = builder.Environment.EnvironmentName;
 
-var openTelemetryBuilder = builder.Services
-    .AddOpenTelemetry()
-    .ConfigureResource(resource =>
-    {
-        resource.AddService(
-            serviceName: serviceName,
-            serviceVersion: serviceVersion,
-            serviceInstanceId: Environment.MachineName);
-        resource.AddAttributes(new[]
-        {
-            new KeyValuePair<string, object>("deployment.environment", environmentName)
-        });
-    });
+// var openTelemetryBuilder = builder.Services
+//     .AddOpenTelemetry()
+//     .ConfigureResource(resource =>
+//     {
+//         resource.AddService(
+//             serviceName: serviceName,
+//             serviceVersion: serviceVersion,
+//             serviceInstanceId: Environment.MachineName);
+//         resource.AddAttributes(new[]
+//         {
+//             new KeyValuePair<string, object>("deployment.environment", environmentName)
+//         });
+//     });
 
-openTelemetryBuilder.WithTracing(tracing =>
-{
-    tracing
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddEntityFrameworkCoreInstrumentation()
-        .AddSource("JackLimited.Api");
+// openTelemetryBuilder.WithTracing(tracing =>
+// {
+//     tracing
+//         .AddAspNetCoreInstrumentation()
+//         .AddHttpClientInstrumentation()
+//         .AddEntityFrameworkCoreInstrumentation()
+//         .AddSource("JackLimited.Api");
 
-    if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var traceEndpoint))
-    {
-        tracing.AddOtlpExporter(options => options.Endpoint = traceEndpoint);
-    }
-});
+//     if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var traceEndpoint))
+//     {
+//         tracing.AddOtlpExporter(options => options.Endpoint = traceEndpoint);
+//     }
+// });
 
-openTelemetryBuilder.WithMetrics(metrics =>
-{
-    metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddMeter("JackLimited.Api");
+// openTelemetryBuilder.WithMetrics(metrics =>
+// {
+//     metrics
+//         .AddAspNetCoreInstrumentation()
+//         .AddHttpClientInstrumentation()
+//         .AddRuntimeInstrumentation()
+//         .AddMeter("JackLimited.Api");
 
-    if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var metricEndpoint))
-    {
-        metrics.AddOtlpExporter(options => options.Endpoint = metricEndpoint);
-    }
-});
+//     if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var metricEndpoint))
+//     {
+//         metrics.AddOtlpExporter(options => options.Endpoint = metricEndpoint);
+//     }
+// });
 
-builder.Logging.AddOpenTelemetry(logging =>
-{
-    logging.IncludeFormattedMessage = true;
-    logging.IncludeScopes = true;
-    logging.ParseStateValues = true;
-    logging.SetResourceBuilder(
-        ResourceBuilder.CreateDefault()
-            .AddService(
-                serviceName: serviceName,
-                serviceVersion: serviceVersion,
-                serviceInstanceId: Environment.MachineName)
-            .AddAttributes(new[]
-            {
-                new KeyValuePair<string, object>("deployment.environment", environmentName)
-            }));
+// builder.Logging.AddOpenTelemetry(logging =>
+// {
+//     logging.IncludeFormattedMessage = true;
+//     logging.IncludeScopes = true;
+//     logging.ParseStateValues = true;
+//     logging.SetResourceBuilder(
+//         ResourceBuilder.CreateDefault()
+//             .AddService(
+//                 serviceName: serviceName,
+//                 serviceVersion: serviceVersion,
+//                 serviceInstanceId: Environment.MachineName)
+//             .AddAttributes(new[]
+//             {
+//                 new KeyValuePair<string, object>("deployment.environment", environmentName)
+//             }));
 
-    if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var logEndpoint))
-    {
-        logging.AddOtlpExporter(options => options.Endpoint = logEndpoint);
-    }
-});
+//     if (!string.IsNullOrWhiteSpace(otlpEndpoint) && Uri.TryCreate(otlpEndpoint, UriKind.Absolute, out var logEndpoint))
+//     {
+//         logging.AddOtlpExporter(options => options.Endpoint = logEndpoint);
+//     }
+// });
 
 builder.Services.AddSingleton<ActivitySource>(_ => new ActivitySource("JackLimited.Api"));
 builder.Services.AddSingleton<SurveyMetrics>();
@@ -161,14 +160,14 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Run database migrations in production
-if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
-{
-    using (var scope = app.Services.CreateScope())
-    {
-        var context = scope.ServiceProvider.GetRequiredService<JackLimitedDbContext>();
-        context.Database.Migrate();
-    }
-}
+// if (!app.Environment.IsDevelopment() && !app.Environment.IsEnvironment("Testing"))
+// {
+//     using (var scope = app.Services.CreateScope())
+//     {
+//         var context = scope.ServiceProvider.GetRequiredService<JackLimitedDbContext>();
+//         context.Database.Migrate();
+//     }
+// }
 
 // Configure forwarded headers (important for proxies like Azure App Service)
 app.UseForwardedHeaders(new ForwardedHeadersOptions
@@ -200,16 +199,16 @@ if (!app.Environment.IsDevelopment())
 if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("Testing"))
 {
     // Surface OpenAPI docs for local/test automation only
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "JackLimited API v1");
-        options.RoutePrefix = "swagger";
-    });
+    // app.UseSwagger();
+    // app.UseSwaggerUI(options =>
+    // {
+    //     options.SwaggerEndpoint("/swagger/v1/swagger.json", "JackLimited API v1");
+    //     options.RoutePrefix = "swagger";
+    // });
 }
 
 // Use rate limiting
-app.UseIpRateLimiting();
+// app.UseIpRateLimiting();
 
 // Add security headers
 app.Use(async (context, next) =>
@@ -249,97 +248,36 @@ app.UseStaticFiles();
 // Use CORS
 app.UseCors();
 
-app.MapHealthChecks("/healthz", new HealthCheckOptions
-{
-    ResponseWriter = WriteHealthCheckResponse
-});
+// app.MapHealthChecks("/healthz", new HealthCheckOptions
+// {
+//     ResponseWriter = WriteHealthCheckResponse
+// });
 
-app.MapHealthChecks("/readyz", new HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains("ready"),
-    ResponseWriter = WriteHealthCheckResponse
-});
+// app.MapHealthChecks("/readyz", new HealthCheckOptions
+// {
+//     Predicate = check => check.Tags.Contains("ready"),
+//     ResponseWriter = WriteHealthCheckResponse
+// });
 
 app.MapFallbackToFile("index.html");
 
 // Minimal API endpoint with enhanced observability
-app.MapPost("/api/survey", async (
-    SurveyRequest request,
-    IValidator<SurveyRequest> validator,
-    ISurveyRepository repository,
-    SurveyMetrics metrics,
-    ActivitySource activitySource,
-    ILogger<Program> logger) =>
+app.MapPost("/api/survey", async (SurveyRequest request, ISurveyRepository repository) =>
 {
-    var stopwatch = Stopwatch.StartNew();
-    using var activity = activitySource.StartActivity("SubmitSurvey");
-    activity?.SetTag("survey.likelihood", request.LikelihoodToRecommend);
-    activity?.SetTag("survey.has_comments", !string.IsNullOrWhiteSpace(request.Comments));
-
-    try
+    var survey = new Survey
     {
-        var validationResult = await validator.ValidateAsync(request);
-        if (!validationResult.IsValid)
-        {
-            stopwatch.Stop();
-            metrics.RecordSubmission(stopwatch.Elapsed, SurveyMetrics.SubmissionOutcome.ValidationError);
-            activity?.SetStatus(ActivityStatusCode.Error, "ValidationFailed");
-            logger.LogInformation("Survey submission rejected due to validation errors");
-            return Results.ValidationProblem(validationResult.ToDictionary());
-        }
+        Id = Guid.NewGuid(),
+        LikelihoodToRecommend = request.LikelihoodToRecommend,
+        Comments = request.Comments,
+        Email = request.Email,
+        CreatedAt = DateTime.UtcNow
+    };
 
-        var sanitizedComments = string.IsNullOrEmpty(request.Comments)
-            ? null
-            : InputSanitizer.SanitizeText(request.Comments);
-        var sanitizedEmail = InputSanitizer.SanitizeEmail(request.Email);
-
-        var survey = new Survey
-        {
-            Id = Guid.NewGuid(),
-            LikelihoodToRecommend = request.LikelihoodToRecommend,
-            Comments = sanitizedComments,
-            Email = sanitizedEmail,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await repository.AddAsync(survey);
-
-        stopwatch.Stop();
-        metrics.RecordSubmission(stopwatch.Elapsed, SurveyMetrics.SubmissionOutcome.Success);
-        activity?.SetStatus(ActivityStatusCode.Ok);
-        logger.LogInformation("Survey {SurveyId} stored successfully", survey.Id);
-
-        return Results.Created($"/api/survey/{survey.Id}", new
-        {
-            Id = survey.Id,
-            Message = "Survey submitted successfully"
-        });
-    }
-    catch (DbUpdateException ex)
-    {
-        stopwatch.Stop();
-        metrics.RecordSubmission(stopwatch.Elapsed, SurveyMetrics.SubmissionOutcome.Failure);
-        activity?.SetStatus(ActivityStatusCode.Error, "DatabaseError");
-        logger.LogError(ex, "Failed to persist survey submission");
-        return Results.Problem(
-            title: "Database Error",
-            detail: "Failed to save survey data. Please try again.",
-            statusCode: 500
-        );
-    }
-    catch (Exception ex)
-    {
-        stopwatch.Stop();
-        metrics.RecordSubmission(stopwatch.Elapsed, SurveyMetrics.SubmissionOutcome.Failure);
-        activity?.SetStatus(ActivityStatusCode.Error, "UnhandledError");
-        logger.LogError(ex, "Unexpected error during survey submission");
-        return Results.Problem(
-            title: "Internal Server Error",
-            detail: "An unexpected error occurred. Please try again later.",
-            statusCode: 500
-        );
-    }
+    await repository.AddAsync(survey);
+    return Results.Created($"/api/survey/{survey.Id}", new { Message = "Survey submitted successfully", Id = survey.Id });
 });
+
+app.MapGet("/api/test", () => Results.Ok(new { Message = "Test endpoint works" }));
 
 app.MapGet("/api/survey/nps", async (
     ISurveyRepository repository,
@@ -348,7 +286,7 @@ app.MapGet("/api/survey/nps", async (
     ILogger<Program> logger) =>
 {
     var stopwatch = Stopwatch.StartNew();
-    using var activity = activitySource.StartActivity("GetSurveyNps");
+    // using var activity = activitySource.StartActivity("GetSurveyNps");
 
     try
     {
@@ -356,16 +294,16 @@ app.MapGet("/api/survey/nps", async (
         var nps = NpsCalculator.CalculateNps(ratings);
 
         stopwatch.Stop();
-        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/nps");
-        activity?.SetStatus(ActivityStatusCode.Ok);
+        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/nps");
+        // activity?.SetStatus(ActivityStatusCode.Ok);
 
         return Results.Ok(new { Nps = nps });
     }
     catch (Exception ex)
     {
         stopwatch.Stop();
-        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/nps");
-        activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
+        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/nps");
+        // activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
         logger.LogError(ex, "Failed to calculate NPS");
         return Results.Problem(
             title: "Data Retrieval Error",
@@ -382,23 +320,23 @@ app.MapGet("/api/survey/average", async (
     ILogger<Program> logger) =>
 {
     var stopwatch = Stopwatch.StartNew();
-    using var activity = activitySource.StartActivity("GetSurveyAverage");
+    // using var activity = activitySource.StartActivity("GetSurveyAverage");
 
     try
     {
         var average = await repository.GetAverageRatingAsync();
 
         stopwatch.Stop();
-        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/average");
-        activity?.SetStatus(ActivityStatusCode.Ok);
+        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/average");
+        // activity?.SetStatus(ActivityStatusCode.Ok);
 
         return Results.Ok(new { Average = Math.Round(average, 2) });
     }
     catch (Exception ex)
     {
         stopwatch.Stop();
-        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/average");
-        activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
+        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/average");
+        // activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
         logger.LogError(ex, "Failed to calculate average rating");
         return Results.Problem(
             title: "Data Retrieval Error",
@@ -425,16 +363,16 @@ app.MapGet("/api/survey/distribution", async (
             .ToDictionary(g => g.Key, g => g.Count());
 
         stopwatch.Stop();
-        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/distribution");
-        activity?.SetStatus(ActivityStatusCode.Ok);
+        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/distribution");
+        // activity?.SetStatus(ActivityStatusCode.Ok);
 
         return Results.Ok(distribution);
     }
     catch (Exception ex)
     {
         stopwatch.Stop();
-        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/distribution");
-        activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
+        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/distribution");
+        // activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
         logger.LogError(ex, "Failed to retrieve rating distribution");
         return Results.Problem(
             title: "Data Retrieval Error",
