@@ -31,9 +31,18 @@ public class SurveyRepository : ISurveyRepository
 
     public async Task<double> GetAverageRatingAsync()
     {
-        var ratings = await _context.Surveys
-            .Select(s => (double)s.LikelihoodToRecommend)
-            .ToListAsync();
-        return ratings.Any() ? ratings.Average() : 0;
+        var average = await _context.Surveys
+            .Select(s => (double?)s.LikelihoodToRecommend)
+            .AverageAsync();
+
+        return average ?? 0;
+    }
+
+    public async Task<IDictionary<int, int>> GetRatingDistributionAsync()
+    {
+        return await _context.Surveys
+            .GroupBy(s => s.LikelihoodToRecommend)
+            .Select(g => new { Rating = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Rating, x => x.Count);
     }
 }

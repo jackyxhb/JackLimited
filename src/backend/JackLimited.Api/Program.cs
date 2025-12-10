@@ -407,10 +407,7 @@ app.MapGet("/api/survey/distribution", async (
 
     try
     {
-        var ratings = await repository.GetAllRatingsAsync();
-        var distribution = ratings
-            .GroupBy(r => r)
-            .ToDictionary(g => g.Key, g => g.Count());
+        var distribution = await repository.GetRatingDistributionAsync();
 
         stopwatch.Stop();
         metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/distribution");
