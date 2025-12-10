@@ -116,7 +116,8 @@ export const useSurveyStore = defineStore('survey', () => {
       let response: Response
 
       try {
-        response = await fetch('/api/survey', {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
+        response = await fetch(`${apiBaseUrl}/api/survey`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -152,7 +153,8 @@ export const useSurveyStore = defineStore('survey', () => {
       let response: Response
 
       try {
-        response = await fetch('/api/survey/nps')
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
+        response = await fetch(`${apiBaseUrl}/api/survey/nps`)
       } catch (error) {
         recordFetchTelemetry('/api/survey/nps', 'GET', 0, performance.now() - startedAt, false)
         throw error instanceof Error ? error : new Error('Unknown error')
@@ -177,7 +179,8 @@ export const useSurveyStore = defineStore('survey', () => {
       let response: Response
 
       try {
-        response = await fetch('/api/survey/average')
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
+        response = await fetch(`${apiBaseUrl}/api/survey/average`)
       } catch (error) {
         recordFetchTelemetry('/api/survey/average', 'GET', 0, performance.now() - startedAt, false)
         throw error instanceof Error ? error : new Error('Unknown error')
@@ -202,7 +205,8 @@ export const useSurveyStore = defineStore('survey', () => {
       let response: Response
 
       try {
-        response = await fetch('/api/survey/distribution')
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || ''
+        response = await fetch(`${apiBaseUrl}/api/survey/distribution`)
       } catch (error) {
         recordFetchTelemetry('/api/survey/distribution', 'GET', 0, performance.now() - startedAt, false)
         throw error instanceof Error ? error : new Error('Unknown error')
