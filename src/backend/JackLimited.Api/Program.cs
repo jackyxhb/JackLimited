@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using JackLimited.Api.Filters;
 using JackLimited.Api.Observability;
 using JackLimited.Application;
 using JackLimited.Domain;
@@ -39,6 +40,8 @@ if (builder.Environment.IsEnvironment("Development"))
     builder.Configuration.AddUserSecrets<Program>();
 }
 
+builder.Services.AddValidatorsFromAssembly(typeof(SurveyRequest).Assembly);
+builder.Services.AddProblemDetails();
 // Add services
 builder.Services.AddValidatorsFromAssembly(typeof(SurveyRequest).Assembly);
 // builder.Services.AddEndpointsApiExplorer();
@@ -60,19 +63,26 @@ builder.Services.AddValidatorsFromAssembly(typeof(SurveyRequest).Assembly);
 // builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 // builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
-if (builder.Environment.IsEnvironment("Testing") || builder.Environment.IsEnvironment("Development"))
+if (builder.Environment.IsEnvironment("Testing"))
 {
     builder.Services.AddDbContext<JackLimitedDbContext>(options =>
         options.UseInMemoryDatabase("TestDb"));
 }
 else
 {
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    if (string.IsNullOrWhiteSpace(connectionString))
+    {
+        throw new InvalidOperationException("Database connection string 'DefaultConnection' was not found.");
+    }
+
     builder.Services.AddDbContext<JackLimitedDbContext>(options =>
-        options.UseInMemoryDatabase("ProdDb"));
+        options.UseNpgsql(connectionString));
 }
 
 builder.Services.AddScoped<ISurveyRepository, SurveyRepository>();
-// builder.Services.AddHealthChecks();
+var healthChecks = builder.Services.AddHealthChecks();
+healthChecks.AddDbContextCheck<JackLimitedDbContext>("database", tags: new[] { "ready" });
 
 var otlpEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"];
 var serviceName = builder.Environment.ApplicationName ?? "JackLimited.Api";
@@ -175,6 +185,8 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
 });
 
+app.UseExceptionHandler();
+
 app.Use(async (context, next) =>
 {
     var correlationId = context.Request.Headers[CorrelationIdHeaderName].FirstOrDefault();
@@ -248,34 +260,66 @@ app.Use(async (context, next) =>
 // Use CORS
 app.UseCors();
 
-// app.MapHealthChecks("/healthz", new HealthCheckOptions
-// {
-//     ResponseWriter = WriteHealthCheckResponse
-// });
+app.MapHealthChecks("/healthz", new HealthCheckOptions
+{
+    ResponseWriter = WriteHealthCheckResponse
+});
 
-// app.MapHealthChecks("/readyz", new HealthCheckOptions
-// {
-//     Predicate = check => check.Tags.Contains("ready"),
-//     ResponseWriter = WriteHealthCheckResponse
-// });
+app.MapHealthChecks("/readyz", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = WriteHealthCheckResponse
+});
 
 // app.MapFallbackToFile("index.html");
 
 // Minimal API endpoint with enhanced observability
-app.MapPost("/api/survey", async (SurveyRequest request, ISurveyRepository repository) =>
+app.MapPost("/api/survey", async (
+    SurveyRequest request,
+    ISurveyRepository repository,
+    SurveyMetrics metrics,
+    ActivitySource activitySource,
+    ILogger<Program> logger) =>
 {
-    var survey = new Survey
-    {
-        Id = Guid.NewGuid(),
-        LikelihoodToRecommend = request.LikelihoodToRecommend,
-        Comments = request.Comments,
-        Email = request.Email,
-        CreatedAt = DateTime.UtcNow
-    };
+    var stopwatch = Stopwatch.StartNew();
+    using var activity = activitySource.StartActivity("SubmitSurvey");
 
-    await repository.AddAsync(survey);
-    return Results.Created($"/api/survey/{survey.Id}", new { Message = "Survey submitted successfully", Id = survey.Id });
-});
+    try
+    {
+        var sanitizedComments = string.IsNullOrWhiteSpace(request.Comments)
+            ? null
+            : InputSanitizer.SanitizeText(request.Comments);
+        var sanitizedEmail = InputSanitizer.SanitizeEmail(request.Email);
+
+        var survey = new Survey
+        {
+            Id = Guid.NewGuid(),
+            LikelihoodToRecommend = request.LikelihoodToRecommend,
+            Comments = sanitizedComments,
+            Email = sanitizedEmail,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await repository.AddAsync(survey);
+
+        stopwatch.Stop();
+        metrics.RecordSubmission(stopwatch.Elapsed, SurveyMetrics.SubmissionOutcome.Success);
+        activity?.SetStatus(ActivityStatusCode.Ok);
+
+        return Results.Created($"/api/survey/{survey.Id}", new { Message = "Survey submitted successfully", Id = survey.Id });
+    }
+    catch (Exception ex)
+    {
+        stopwatch.Stop();
+        metrics.RecordSubmission(stopwatch.Elapsed, SurveyMetrics.SubmissionOutcome.Failure);
+        activity?.SetStatus(ActivityStatusCode.Error, "SurveySubmissionFailure");
+        logger.LogError(ex, "Failed to submit survey");
+
+        return Results.Problem(
+            title: "Submission Failed",
+            detail: "We were unable to save your feedback. Please try again.");
+    }
+}).AddEndpointFilter<ValidationFilter<SurveyRequest>>();
 
 app.MapGet("/api/test", () => 
 {
@@ -283,7 +327,40 @@ app.MapGet("/api/test", () =>
     return Results.Ok("Test endpoint works");
 });
 
-app.MapGet("/api/survey/nps", () => Results.Ok(new { Nps = 0 }));
+app.MapGet("/api/survey/nps", async (
+    ISurveyRepository repository,
+    SurveyMetrics metrics,
+    ActivitySource activitySource,
+    ILogger<Program> logger) =>
+{
+    var stopwatch = Stopwatch.StartNew();
+    using var activity = activitySource.StartActivity("GetSurveyNps");
+
+    try
+    {
+        var ratings = await repository.GetAllRatingsAsync();
+        var npsScore = NpsCalculator.CalculateNps(ratings);
+
+        stopwatch.Stop();
+        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/nps");
+        activity?.SetStatus(ActivityStatusCode.Ok);
+
+        return Results.Ok(new { Nps = npsScore });
+    }
+    catch (Exception ex)
+    {
+        stopwatch.Stop();
+        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/nps");
+        activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
+        logger.LogError(ex, "Failed to calculate NPS");
+
+        return Results.Problem(
+            title: "Data Retrieval Error",
+            detail: "Failed to calculate Net Promoter Score. Please try again later.",
+            statusCode: 500
+        );
+    }
+});
 
 app.MapGet("/api/survey/average", async (
     ISurveyRepository repository,
@@ -292,23 +369,23 @@ app.MapGet("/api/survey/average", async (
     ILogger<Program> logger) =>
 {
     var stopwatch = Stopwatch.StartNew();
-    // using var activity = activitySource.StartActivity("GetSurveyAverage");
+    using var activity = activitySource.StartActivity("GetSurveyAverage");
 
     try
     {
         var average = await repository.GetAverageRatingAsync();
 
         stopwatch.Stop();
-        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/average");
-        // activity?.SetStatus(ActivityStatusCode.Ok);
+        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/average");
+        activity?.SetStatus(ActivityStatusCode.Ok);
 
         return Results.Ok(new { Average = Math.Round(average, 2) });
     }
     catch (Exception ex)
     {
         stopwatch.Stop();
-        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/average");
-        // activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
+        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/average");
+        activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
         logger.LogError(ex, "Failed to calculate average rating");
         return Results.Problem(
             title: "Data Retrieval Error",
@@ -335,16 +412,16 @@ app.MapGet("/api/survey/distribution", async (
             .ToDictionary(g => g.Key, g => g.Count());
 
         stopwatch.Stop();
-        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/distribution");
-        // activity?.SetStatus(ActivityStatusCode.Ok);
+        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/distribution");
+        activity?.SetStatus(ActivityStatusCode.Ok);
 
         return Results.Ok(distribution);
     }
     catch (Exception ex)
     {
         stopwatch.Stop();
-        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/distribution");
-        // activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
+        metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/distribution");
+        activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
         logger.LogError(ex, "Failed to retrieve rating distribution");
         return Results.Problem(
             title: "Data Retrieval Error",
