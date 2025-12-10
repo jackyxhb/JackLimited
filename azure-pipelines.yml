@@ -32,6 +32,8 @@ stages:
             displayName: Build
           - script: dotnet test JackLimited.sln --configuration $(buildConfiguration) --no-build --collect:"XPlat Code Coverage"
             displayName: Test
+          - script: rm -rf $(Build.ArtifactStagingDirectory)/api
+            displayName: Clean API publish folder
           - script: dotnet publish src/backend/JackLimited.Api/JackLimited.Api.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/api
             displayName: Publish API
 

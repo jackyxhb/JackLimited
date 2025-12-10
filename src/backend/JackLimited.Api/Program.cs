@@ -242,8 +242,8 @@ app.Use(async (context, next) =>
 });
 
 // Configure static files serving
-app.UseDefaultFiles();
-app.UseStaticFiles();
+// app.UseDefaultFiles();
+// app.UseStaticFiles();
 
 // Use CORS
 app.UseCors();
@@ -259,7 +259,7 @@ app.UseCors();
 //     ResponseWriter = WriteHealthCheckResponse
 // });
 
-app.MapFallbackToFile("index.html");
+// app.MapFallbackToFile("index.html");
 
 // Minimal API endpoint with enhanced observability
 app.MapPost("/api/survey", async (SurveyRequest request, ISurveyRepository repository) =>
@@ -277,41 +277,13 @@ app.MapPost("/api/survey", async (SurveyRequest request, ISurveyRepository repos
     return Results.Created($"/api/survey/{survey.Id}", new { Message = "Survey submitted successfully", Id = survey.Id });
 });
 
-app.MapGet("/api/test", () => Results.Ok(new { Message = "Test endpoint works" }));
-
-app.MapGet("/api/survey/nps", async (
-    ISurveyRepository repository,
-    SurveyMetrics metrics,
-    ActivitySource activitySource,
-    ILogger<Program> logger) =>
+app.MapGet("/api/test", () => 
 {
-    var stopwatch = Stopwatch.StartNew();
-    // using var activity = activitySource.StartActivity("GetSurveyNps");
-
-    try
-    {
-        var ratings = await repository.GetAllRatingsAsync();
-        var nps = NpsCalculator.CalculateNps(ratings);
-
-        stopwatch.Stop();
-        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Success, "/api/survey/nps");
-        // activity?.SetStatus(ActivityStatusCode.Ok);
-
-        return Results.Ok(new { Nps = nps });
-    }
-    catch (Exception ex)
-    {
-        stopwatch.Stop();
-        // metrics.RecordAnalytics(stopwatch.Elapsed, SurveyMetrics.AnalyticsOutcome.Failure, "/api/survey/nps");
-        // activity?.SetStatus(ActivityStatusCode.Error, "AnalyticsFailure");
-        logger.LogError(ex, "Failed to calculate NPS");
-        return Results.Problem(
-            title: "Data Retrieval Error",
-            detail: "Failed to calculate NPS. Please try again later.",
-            statusCode: 500
-        );
-    }
+    Console.WriteLine("GET /api/test called");
+    return Results.Ok("Test endpoint works");
 });
+
+app.MapGet("/api/survey/nps", () => Results.Ok(new { Nps = 0 }));
 
 app.MapGet("/api/survey/average", async (
     ISurveyRepository repository,

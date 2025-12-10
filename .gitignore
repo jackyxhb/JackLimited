@@ -1,6 +1,12 @@
 # .NET
 bin/
 obj/
+publish/
+**/publish/
+deployments/
+**/deployments/
+LogFiles/
+**/LogFiles/
 *.user
 *.suo
 *.cache
@@ -161,5 +167,7 @@ coverage/
 .fake
 frontend/*.zip
 *.zip
+logs.zip
+logs*.zip
 *.dll
 
