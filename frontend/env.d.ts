@@ -19,12 +19,14 @@ declare module 'vue' {
   }
 }
 
-interface ImportMetaEnv {
-  readonly VITE_APPINSIGHTS_CONNECTION_STRING?: string
-}
+declare global {
+  interface ImportMetaEnv {
+    readonly VITE_APPINSIGHTS_CONNECTION_STRING?: string
+  }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv
+  interface ImportMeta {
+    readonly env: ImportMetaEnv
+  }
 }
 
 export {}
