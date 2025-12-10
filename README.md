@@ -186,8 +186,17 @@ This starts the app on `http://localhost:8081` and PostgreSQL on `localhost:5433
 - `GET /api/survey/nps` - Get current NPS score
 - `GET /api/survey/average` - Get average rating
 - `GET /api/survey/distribution` - Get rating distribution
+- `GET /healthz` - Liveness health probe (includes dependency summaries)
+- `GET /readyz` - Readiness health probe (verifies database connectivity)
 - `POST /testing/reset` (Testing env only, `X-Test-Auth` required) - Clear all surveys
 - `POST /testing/seed` (Testing env only, `X-Test-Auth` required) - Seed surveys for deterministic tests
+
+## Observability
+
+- The backend emits OpenTelemetry traces, metrics, and logs. Configure the OTLP endpoint via `OpenTelemetry:OtlpEndpoint` in `appsettings.*` or environment variables.
+- Custom metrics track survey submission outcomes and analytics latency. Correlation IDs (`X-Correlation-ID`) propagate through every request.
+- Health probes are available at `/healthz` and `/readyz` to integrate with orchestrators.
+- Service-level objectives, indicators, and review cadence live in `docs/observability/slo.md`.
 
 ## Versioning
 

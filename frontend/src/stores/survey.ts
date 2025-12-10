@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { SurveyRequest, NpsResponse, AverageResponse, DistributionResponse } from '@/types/survey'
+import { recordFetchTelemetry } from '@/telemetry/appInsights'
 
 interface LoadingState {
   submit: boolean
@@ -111,20 +112,30 @@ export const useSurveyStore = defineStore('survey', () => {
 
   const submitSurvey = async (survey: SurveyRequest) => {
     return apiCallWithRetry(async () => {
-      const response = await fetch('/api/survey', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(survey),
-      })
+      const startedAt = performance.now()
+      let response: Response
+
+      try {
+        response = await fetch('/api/survey', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(survey),
+        })
+      } catch (error) {
+        recordFetchTelemetry('/api/survey', 'POST', 0, performance.now() - startedAt, false)
+        throw error instanceof Error ? error : new Error('Unknown error')
+      }
+
+      const duration = performance.now() - startedAt
+      recordFetchTelemetry('/api/survey', 'POST', response.status, duration, response.ok)
 
       if (!response.ok) {
         const errorText = await response.text()
         throw new Error(`${response.status}: ${errorText || response.statusText}`)
       }
 
-      // Refresh all analytics after successful submission
       await Promise.allSettled([
         fetchNps(),
         fetchAverage(),
@@ -137,7 +148,18 @@ export const useSurveyStore = defineStore('survey', () => {
 
   const fetchNps = async () => {
     return apiCallWithRetry(async () => {
-      const response = await fetch('/api/survey/nps')
+      const startedAt = performance.now()
+      let response: Response
+
+      try {
+        response = await fetch('/api/survey/nps')
+      } catch (error) {
+        recordFetchTelemetry('/api/survey/nps', 'GET', 0, performance.now() - startedAt, false)
+        throw error instanceof Error ? error : new Error('Unknown error')
+      }
+
+      const duration = performance.now() - startedAt
+      recordFetchTelemetry('/api/survey/nps', 'GET', response.status, duration, response.ok)
 
       if (!response.ok) {
         throw new Error(`${response.status}: ${response.statusText}`)
@@ -151,7 +173,18 @@ export const useSurveyStore = defineStore('survey', () => {
 
   const fetchAverage = async () => {
     return apiCallWithRetry(async () => {
-      const response = await fetch('/api/survey/average')
+      const startedAt = performance.now()
+      let response: Response
+
+      try {
+        response = await fetch('/api/survey/average')
+      } catch (error) {
+        recordFetchTelemetry('/api/survey/average', 'GET', 0, performance.now() - startedAt, false)
+        throw error instanceof Error ? error : new Error('Unknown error')
+      }
+
+      const duration = performance.now() - startedAt
+      recordFetchTelemetry('/api/survey/average', 'GET', response.status, duration, response.ok)
 
       if (!response.ok) {
         throw new Error(`${response.status}: ${response.statusText}`)
@@ -165,7 +198,18 @@ export const useSurveyStore = defineStore('survey', () => {
 
   const fetchDistribution = async () => {
     return apiCallWithRetry(async () => {
-      const response = await fetch('/api/survey/distribution')
+      const startedAt = performance.now()
+      let response: Response
+
+      try {
+        response = await fetch('/api/survey/distribution')
+      } catch (error) {
+        recordFetchTelemetry('/api/survey/distribution', 'GET', 0, performance.now() - startedAt, false)
+        throw error instanceof Error ? error : new Error('Unknown error')
+      }
+
+      const duration = performance.now() - startedAt
+      recordFetchTelemetry('/api/survey/distribution', 'GET', response.status, duration, response.ok)
 
       if (!response.ok) {
         throw new Error(`${response.status}: ${response.statusText}`)

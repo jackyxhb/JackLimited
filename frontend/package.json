@@ -17,6 +17,7 @@
     "lint": "eslint . --fix --cache"
   },
   "dependencies": {
+    "@microsoft/applicationinsights-web": "^3.0.2",
     "chart.js": "^4.5.1",
     "lucide-vue-next": "^0.555.0",
     "pinia": "^3.0.4",

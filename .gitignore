@@ -148,7 +148,9 @@ out/
 
 # Testing
 test-results/
+**/test-results/
 playwright-report/
+**/playwright-report/
 coverage/
 
 # Miscellaneous
