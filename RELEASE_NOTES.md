@@ -1,6 +1,6 @@
 # Release Notes
 
-## Version 1.1.1 - Maintenance Release (December 10, 2025)
+## Version 1.1.9 - Maintenance Release (December 10, 2025)
 
 ### Fixes
 - Eliminated stale static-file routing artifacts by cleaning the backend publish output before deployment, restoring all GET analytics endpoints in Azure App Service.
