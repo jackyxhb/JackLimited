@@ -1,8 +1,25 @@
 import { ApplicationInsights } from '@microsoft/applicationinsights-web'
 import type { Router } from 'vue-router'
 
-let insightsClient: ApplicationInsights | null = null
+type TelemetryClient = Pick<ApplicationInsights, 'trackPageView' | 'trackEvent'> & {
+  loadAppInsights?: () => void
+}
+
+let insightsClient: TelemetryClient | null = null
 let initialized = false
+
+const createFallbackClient = (): TelemetryClient => {
+  const log = (level: 'warn' | 'info', message: string, data?: Record<string, unknown>) => {
+    const payload = data ? `${message} ${JSON.stringify(data)}` : message
+    const fn = level === 'warn' ? console.warn : console.info
+    fn(`[TelemetryFallback] ${payload}`)
+  }
+
+  return {
+    trackPageView: (data) => log('info', 'Page view', data ?? {}),
+    trackEvent: (data) => log('warn', 'Custom event', data?.properties ?? {}),
+  }
+}
 
 export const initializeTelemetry = (router: Router): void => {
   if (initialized) {
@@ -11,6 +28,9 @@ export const initializeTelemetry = (router: Router): void => {
 
   const connectionString = import.meta.env.VITE_APPINSIGHTS_CONNECTION_STRING
   if (!connectionString) {
+    console.warn('[Telemetry] VITE_APPINSIGHTS_CONNECTION_STRING missing; recording events to console fallback.')
+    insightsClient = createFallbackClient()
+    initialized = true
     return
   }
 
@@ -25,8 +45,8 @@ export const initializeTelemetry = (router: Router): void => {
     },
   })
 
-  insightsClient.loadAppInsights()
-  insightsClient.trackPageView()
+  insightsClient.loadAppInsights?.()
+  insightsClient.trackPageView({ name: 'initial-page-load' })
 
   router.afterEach((to) => {
     insightsClient?.trackPageView({
@@ -46,7 +66,7 @@ export const recordFetchTelemetry = (
   success: boolean
 ): void => {
   if (!insightsClient) {
-    return
+    insightsClient = createFallbackClient()
   }
 
   insightsClient.trackEvent({
