@@ -34,7 +34,7 @@ describe('useSurveyStore', () => {
     if (nativeFetch) {
       globalThis.fetch = nativeFetch
     } else {
-      delete (globalThis as GlobalWithFetch).fetch
+      Reflect.deleteProperty(globalThis as GlobalWithFetch, 'fetch')
     }
   })
 

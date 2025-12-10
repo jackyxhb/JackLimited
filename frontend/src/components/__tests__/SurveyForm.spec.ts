@@ -57,11 +57,10 @@ describe('SurveyForm', () => {
     await flushPromises()
 
     expect(submitSurveyMock).toHaveBeenCalledTimes(1)
-    const payload = submitSurveyMock.mock.calls[0][0]
-    expect(payload.likelihoodToRecommend).toBe(9)
-    expect(payload.comments).toBeDefined()
-    expect(payload.comments).not.toMatch(/[<>]/)
-    expect(payload.email).toBe('user@example.com')
+    const payload = submitSurveyMock.mock.calls[0]?.[0] ?? null
+    expect(payload).toBeTruthy()
+    expect(payload).toMatchObject({ likelihoodToRecommend: 9, email: 'user@example.com' })
+    expect((payload?.comments ?? '')).not.toMatch(/[<>]/)
     expect(toastSuccessMock).toHaveBeenCalledWith(
       'Feedback Submitted!',
       'Thank you for your valuable feedback.',
