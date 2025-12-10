@@ -67,6 +67,9 @@ jobs:
           chmod +x test-docker-image.sh
           ./test-docker-image.sh
 
+      - name: Build CI Docker image
+        run: docker build -t jacklimited:ci -f Dockerfile .
+
       - name: Run Trivy scan
         run: docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/aquasecurity/trivy:latest image jacklimited:ci --format table --exit-code 1 --severity HIGH,CRITICAL
 
