@@ -119,6 +119,7 @@ The frontend proxies API traffic to `/api` and Playwright injects `TESTING_API_K
    cd src/backend/JackLimited.Api
    dotnet publish -c Release
    ```
+   > Tip: Remove any previous `publish/` output (`rm -rf publish`) or run `dotnet publish -c Release /p:DeleteExistingFiles=true` so stale binaries aren't packaged for deployment.
 
 2. Build the frontend:
    ```bash

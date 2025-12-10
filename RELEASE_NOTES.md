@@ -1,5 +1,17 @@
 # Release Notes
 
+## Version 1.1.1 - Maintenance Release (December 10, 2025)
+
+### Fixes
+- Eliminated stale static-file routing artifacts by cleaning the backend publish output before deployment, restoring all GET analytics endpoints in Azure App Service.
+
+### DevOps
+- Azure Pipeline now wipes `$(Build.ArtifactStagingDirectory)/api` prior to `dotnet publish`, preventing nested `publish/` directories from being re-deployed.
+- Updated `.gitignore` and repository hygiene to exclude publish packages, Azure log downloads, and deployment folders so only source files remain tracked.
+
+### Known Issues
+- None reported.
+
 ## Version 1.1.0 - Feature Release (December 2, 2025)
 
 ### New Features
