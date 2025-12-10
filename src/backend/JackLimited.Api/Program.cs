@@ -152,7 +152,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "https://jacklimited-portal.azurewebsites.net") // Vite dev server + production
+        policy.WithOrigins("http://localhost:5173", "http://localhost:5174", "https://jacksurvey-webapp.azurewebsites.net") // Vite dev server + production
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
