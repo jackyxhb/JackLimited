@@ -159,3 +159,5 @@ coverage/
 *.old
 *.orig
 .fake
+frontend/*.zip
+*.zip
