@@ -6,7 +6,9 @@
   "scripts": {
     "test": "npm run test:unit && npm run test:e2e",
     "test:unit": "cd frontend && npm run test:unit",
+    "test:unit:coverage": "cd frontend && npm run test:unit -- --run --coverage",
     "test:e2e": "cd frontend && npm run test:e2e",
+    "test:e2e:ci": "cd frontend && npm run test:e2e -- --reporter=line",
     "test:docker": "./test-docker-image.sh",
     "test:docker:api": "./test-docker-image.sh api",
     "test:docker:integration": "./test-docker-image.sh integration",
@@ -16,6 +18,7 @@
     "test:container:security": "node test-docker-container.js --security",
     "build": "cd frontend && npm run build",
     "lint": "cd frontend && npm run lint",
+    "lint:ci": "cd frontend && npm run lint -- --max-warnings=0",
     "docker:build": "docker build -t jacklimited .",
     "docker:run": "docker run -p 8080:8080 jacklimited",
     "docker:test": "npm run test:docker && npm run test:container",

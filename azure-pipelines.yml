@@ -51,20 +51,25 @@ stages:
               cd frontend
               npm ci
             displayName: Install Frontend Dependencies
-          - script: |
-              cd frontend
-              npm run lint
+          - script: npm run lint:ci
             displayName: Lint Frontend
-          - script: |
-              cd frontend
-              npm run test:unit -- --run
-            displayName: Frontend Unit Tests
+          - script: npm run test:unit:coverage
+            displayName: Frontend Unit Tests (with coverage)
+          - task: PublishCodeCoverageResults@1
+            displayName: Publish Frontend Coverage
+            inputs:
+              codeCoverageTool: Cobertura
+              summaryFileLocation: frontend/coverage/unit/cobertura-coverage.xml
+              reportDirectory: frontend/coverage/unit
+              failIfCoverageEmpty: true
           - script: |
               cd frontend
               npx playwright install --with-deps
+            displayName: Install Playwright Browsers
+          - script: |
               export CI=1
               export VITE_API_BASE_URL=http://localhost:5264
-              npm run test:e2e -- --reporter=line
+              npm run test:e2e:ci
             displayName: Playwright E2E Tests
             env:
               TESTING_API_KEY: $(testingApiKey)
