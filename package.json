@@ -8,7 +8,7 @@
     "test:unit": "cd frontend && npm run test:unit",
     "test:unit:coverage": "cd frontend && npm run test:unit -- --run --coverage",
     "test:e2e": "cd frontend && npm run test:e2e",
-    "test:e2e:ci": "cd frontend && npm run test:e2e -- --reporter=line",
+    "test:e2e:ci": "cd frontend && npm run test:e2e -- --reporter=line --reporter=html",
     "test:docker": "./test-docker-image.sh",
     "test:docker:api": "./test-docker-image.sh api",
     "test:docker:integration": "./test-docker-image.sh integration",

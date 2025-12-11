@@ -73,6 +73,13 @@ stages:
             displayName: Playwright E2E Tests
             env:
               TESTING_API_KEY: $(testingApiKey)
+          - task: PublishBuildArtifacts@1
+            displayName: Upload Playwright HTML Report
+            condition: always()
+            inputs:
+              PathtoPublish: frontend/playwright-report
+              ArtifactName: playwright-report
+              publishLocation: Container
           - script: |
               cd frontend
               export VITE_API_BASE_URL=https://jacklimited-api.azurewebsites.net
